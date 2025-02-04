@@ -1,8 +1,16 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./Pages/Home";
+import Navbar from "./Components/Navbar";
+import Footer from "./Components/Footer";
 function App() {
   return (
-    <div style={{ color: "red" }}>
-      Tailwind is working!
-    </div>
+    <BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+      <Footer />
+    </BrowserRouter>
   );
 }
 
