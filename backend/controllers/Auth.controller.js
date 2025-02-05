@@ -65,9 +65,23 @@ export const signUp = async (req, res) => {
     // Save the user to the database
     const savedUser = await newUser.save();
 
+    // Generate JWT Token
+    const token = jwt.sign(
+      { userId: savedUser._id, email: savedUser.email },
+      process.env.JWT_SECRET, // Secret key from environment variables
+      { expiresIn: "1h" }
+    );
+
+    // Set JWT as an HTTP-only cookie
+    res.cookie("token", token, {
+      httpOnly: true, // Cannot be accessed by JavaScript
+      secure: process.env.NODE_ENV === "production", // Set to true in production (requires HTTPS)
+      maxAge: 3600000, // 1 hour
+    });
     res.status(201).json({
       message: "User created successfully",
       user: savedUser,
+      token, // Send the JWT token in the response
     });
   } catch (error) {
     console.error("SignUp Error:", error);
