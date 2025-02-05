@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const SignupForm = () => {
     gender: "",
     avatar: null,
   });
+  const [loading, setLoading] = useState(false); // Loading state
 
   const roles = [
     "Manager Senior",
@@ -34,9 +36,11 @@ const SignupForm = () => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      Swal.fire("Error", "Passwords do not match!", "error");
       return;
     }
+
+    setLoading(true); // Start loading
 
     // Prepare data to send to the backend
     const dataToSend = {
@@ -54,29 +58,30 @@ const SignupForm = () => {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", // Indicating we're sending JSON
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(dataToSend), // Send the data as JSON
+        body: JSON.stringify(dataToSend),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        alert("User created successfully!");
+        Swal.fire("Success", "User created successfully!", "success");
         // Optionally, redirect the user to the login page or home
       } else {
-        alert(`Error: ${data.message}`);
+        Swal.fire("Error", data.message, "error");
       }
     } catch (error) {
       console.error("Signup error:", error);
-      alert("An error occurred. Please try again.");
+      Swal.fire("Error", "An error occurred. Please try again.", "error");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-400 to-purple-600 p-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl flex flex-col md:flex-row gap-8">
-        {/* Left Side - Form */}
         <div className="flex-1">
           <div className="flex flex-col items-center mb-6">
             <h2 className="text-3xl font-semibold text-center mb-4">
@@ -173,7 +178,7 @@ const SignupForm = () => {
                   type="tel"
                   name="mobile"
                   placeholder="Enter your phone number"
-                  value={formData.phone}
+                  value={formData.mobile}
                   onChange={handleChange}
                   required
                   className="w-full p-4 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -245,8 +250,15 @@ const SignupForm = () => {
             <button
               type="submit"
               className="w-full py-4 mt-6 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              disabled={loading} // Disable the button while loading
             >
-              Register
+              {loading ? (
+                <div className="spinner-border animate-spin text-white">
+                  Loading...
+                </div>
+              ) : (
+                "Register"
+              )}
             </button>
           </form>
         </div>
