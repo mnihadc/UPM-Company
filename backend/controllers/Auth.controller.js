@@ -2,6 +2,13 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.model.js";
 import validator from "validator";
+import nodemailer from "nodemailer";
+import crypto from "crypto"; // For generating OTPs
+
+// Helper function to generate OTP
+const generateOtp = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+};
 
 // SignUp Controller
 export const signUp = async (req, res) => {
@@ -49,6 +56,9 @@ export const signUp = async (req, res) => {
       return res.status(400).json({ message: "Invalid avatar URL" });
     }
 
+    // Generate OTP
+    const otp = generateOtp();
+
     // Create new user object
     const newUser = new User({
       username,
@@ -60,28 +70,56 @@ export const signUp = async (req, res) => {
       gender,
       avatar: avatar || "", // Default to empty string if no avatar
       isAdmin: false,
+      otp, // Store OTP in the user object (you can store it in a separate collection or cache if preferred)
+      otpExpires: Date.now() + 3600000, // OTP expiry time (1 hour)
     });
 
     // Save the user to the database
     const savedUser = await newUser.save();
 
-    // Generate JWT Token
-    const token = jwt.sign(
-      { userId: savedUser._id, email: savedUser.email },
-      process.env.JWT_SECRET, // Secret key from environment variables
-      { expiresIn: "1h" }
-    );
-
-    // Set JWT as an HTTP-only cookie
-    res.cookie("token", token, {
-      httpOnly: true, // Cannot be accessed by JavaScript
-      secure: process.env.NODE_ENV === "production", // Set to true in production (requires HTTPS)
-      maxAge: 3600000, // 1 hour
+    // Setup Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // or any other email service
+      auth: {
+        user: process.env.EMAIL_USER, // Your email user
+        pass: process.env.EMAIL_PASS, // Your email password
+      },
     });
+
+    // Compose the email content
+    const mailOptions = {
+      from: process.env.EMAIL_USER, // Your email user
+      to: email, // Recipient's email
+      subject: "Your Email Verification OTP By UPM Company",
+      text: `Your OTP for email verification is: ${otp}`, // Plain text version
+      html: `
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; color: #333; }
+              .container { max-width: 600px; margin: auto; background: #f4f4f4; padding: 20px; border-radius: 8px; }
+              .otp { font-size: 24px; font-weight: bold; color: #4070f4; text-align: center; }
+              .footer { text-align: center; font-size: 12px; color: #888; margin-top: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h2>Welcome to UPM Company!</h2>
+              <p>We received a request to verify your email address. Please use the OTP below to complete the process:</p>
+              <div class="otp">${otp}</div>
+              <p class="footer">If you didn't request this, please ignore this email.</p>
+            </div>
+          </body>
+        </html>
+      `, // HTML version
+    };
+    // Send OTP email
+    await transporter.sendMail(mailOptions);
+
+    // Redirect to email verification page with the token
     res.status(201).json({
-      message: "User created successfully",
+      message: "User created successfully. Check your email for OTP.",
       user: savedUser,
-      token, // Send the JWT token in the response
     });
   } catch (error) {
     console.error("SignUp Error:", error);

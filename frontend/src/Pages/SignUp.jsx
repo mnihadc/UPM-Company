@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Swal from "sweetalert2"; // Import SweetAlert2
+import { useNavigate } from "react-router-dom";
 
 const SignupForm = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ const SignupForm = () => {
     avatar: null,
   });
   const [loading, setLoading] = useState(false); // Loading state
+  const navigate = useNavigate();
 
   const roles = [
     "Manager Senior",
@@ -67,6 +69,7 @@ const SignupForm = () => {
 
       if (response.ok) {
         Swal.fire("Success", "User created successfully!", "success");
+        navigate("/email-verify");
         // Optionally, redirect the user to the login page or home
       } else {
         Swal.fire("Error", data.message, "error");
