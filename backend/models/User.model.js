@@ -10,6 +10,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      enum: [
+        "Manager Senior",
+        "Manager Junior",
+        "Sales Executive Senior",
+        "Sales Executive Junior",
+        "Technician",
+        "Office Staff",
+      ],
+      required: true,
+    },
     email: {
       type: String,
       required: true,
@@ -37,6 +49,10 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       required: true,
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
     },
     createdAt: {
       type: Date,
