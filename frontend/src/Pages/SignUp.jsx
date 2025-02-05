@@ -8,7 +8,7 @@ const SignupForm = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    phone: "",
+    mobile: "",
     gender: "",
     avatar: null,
   });
@@ -30,7 +30,7 @@ const SignupForm = () => {
     setFormData({ ...formData, avatar: e.target.files[0] });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
@@ -38,8 +38,39 @@ const SignupForm = () => {
       return;
     }
 
-    console.log("Submitted Data:", formData);
-    // Here, send data to backend via API
+    // Prepare data to send to the backend
+    const dataToSend = {
+      username: formData.username,
+      age: formData.age,
+      role: formData.role,
+      email: formData.email,
+      password: formData.password,
+      mobile: formData.mobile,
+      gender: formData.gender,
+      avatar: formData.avatar ? formData.avatar.name : null, // Send only file name or null
+    };
+
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // Indicating we're sending JSON
+        },
+        body: JSON.stringify(dataToSend), // Send the data as JSON
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("User created successfully!");
+        // Optionally, redirect the user to the login page or home
+      } else {
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   return (
@@ -140,7 +171,7 @@ const SignupForm = () => {
                 </label>
                 <input
                   type="tel"
-                  name="phone"
+                  name="mobile"
                   placeholder="Enter your phone number"
                   value={formData.phone}
                   onChange={handleChange}

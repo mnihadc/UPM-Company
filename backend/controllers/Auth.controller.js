@@ -5,7 +5,7 @@ import validator from "validator";
 
 // SignUp Controller
 export const signUp = async (req, res) => {
-  const { username, age, role, email, password, phone, gender, avatar } =
+  const { username, age, role, email, password, mobile, gender, avatar } =
     req.body;
 
   try {
@@ -18,13 +18,6 @@ export const signUp = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use" });
-    }
-
-    // Check if phone number is valid (e.g., for Oman)
-    // (Example: you can apply custom regex here if required for phone number validation)
-    const phoneRegex = /^[+971]\d{9}$/; // Example regex for Oman numbers starting with +971
-    if (!phone.match(phoneRegex)) {
-      return res.status(400).json({ message: "Invalid phone number format" });
     }
 
     // Password Validation: Ensure password is at least 6 characters (already handled by Mongoose schema)
@@ -63,7 +56,7 @@ export const signUp = async (req, res) => {
       role,
       email,
       password: hashedPassword,
-      phone,
+      mobile,
       gender,
       avatar: avatar || "", // Default to empty string if no avatar
       isAdmin: false,
@@ -75,7 +68,6 @@ export const signUp = async (req, res) => {
     res.status(201).json({
       message: "User created successfully",
       user: savedUser,
-      token,
     });
   } catch (error) {
     console.error("SignUp Error:", error);
