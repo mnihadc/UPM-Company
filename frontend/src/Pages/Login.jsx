@@ -31,7 +31,8 @@ const Login = () => {
     } catch (error) {
       Swal.fire({
         title: "Error!",
-        text: error.response?.data?.message || "Login failed. Please try again.",
+        text:
+          error.response?.data?.message || "Login failed. Please try again.",
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -41,33 +42,55 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-4">
-      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-md sm:w-96">
-        <h2 className="text-3xl font-semibold text-center text-indigo-600 mb-6">
-          Login
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-6">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg sm:w-96">
+        <h2 className="text-4xl font-semibold text-center text-indigo-600 mb-6">
+          Welcome Back!
         </h2>
+        <p className="text-xl text-center text-gray-700 mb-8">
+          Sign in to continue to your dashboard.
+        </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-lg font-semibold text-gray-700">Email</label>
+            <label className="block text-lg font-semibold text-gray-700 mb-2">
+              Email
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-md"
+              className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
           </div>
 
           <div>
-            <label className="block text-lg font-semibold text-gray-700">Password</label>
+            <label className="block text-lg font-semibold text-gray-700 mb-2">
+              Password
+            </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-4 border border-gray-300 rounded-md"
+              className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
+          </div>
+
+          <div className="flex justify-between items-center">
+            <a
+              href="/forgot-password"
+              className="text-indigo-600 text-sm hover:text-indigo-800 transition duration-200"
+            >
+              Forgot Password?
+            </a>
+            <a
+              href="/signup"
+              className="text-indigo-600 text-sm hover:text-indigo-800 transition duration-200"
+            >
+              Create an Account
+            </a>
           </div>
 
           <button
