@@ -1,67 +1,83 @@
 import { useState } from "react";
+import axios from "axios";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password, rememberMe });
+    setLoading(true);
+
+    try {
+      const response = await axios.post("/api/auth/login", { email, password });
+
+      // Save the JWT token in localStorage or cookies
+      localStorage.setItem("authToken", response.data.token);
+
+      Swal.fire({
+        title: "Login Successful",
+        text: response.data.message,
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+
+      // Navigate to the dashboard or home page
+      navigate("/dashboard"); // or wherever you want to redirect after login
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: error.response?.data?.message || "Login failed. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="bg-white shadow-lg rounded-2xl w-full max-w-md p-8">
-        <h2 className="text-2xl font-bold text-center text-gray-700">Login</h2>
-        <form onSubmit={handleSubmit} className="mt-6">
-          <div className="mb-4">
-            <label className="block text-gray-600 mb-1">Email Address</label>
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-4">
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-md sm:w-96">
+        <h2 className="text-3xl font-semibold text-center text-indigo-600 mb-6">
+          Login
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-lg font-semibold text-gray-700">Email</label>
             <input
               type="email"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-4 border border-gray-300 rounded-md"
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-600 mb-1">Password</label>
+
+          <div>
+            <label className="block text-lg font-semibold text-gray-700">Password</label>
             <input
               type="password"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-4 border border-gray-300 rounded-md"
               required
             />
           </div>
-          <div className="flex justify-between items-center mb-6">
-            <label className="flex items-center text-gray-600">
-              <input
-                type="checkbox"
-                className="mr-2"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-              />
-              Remember me
-            </label>
-            <a href="#" className="text-blue-500 hover:underline text-sm">
-              Forgot password?
-            </a>
-          </div>
+
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-all"
+            disabled={loading}
+            className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
-        <p className="text-center text-gray-600 mt-4">
-          Not a member?{" "}
-          <a href="#" className="text-blue-500 hover:underline">
-            Signup now
-          </a>
-        </p>
       </div>
     </div>
   );

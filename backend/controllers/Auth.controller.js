@@ -198,7 +198,12 @@ export const verifyEmailOtp = async (req, res) => {
     user.email_verify = true; // Assuming you have an `isVerified` field in your schema
     await user.save();
 
-    res.status(200).json({ message: "Email verified successfully" });
+    // Clear token and cookies
+    res.clearCookie("authToken");
+
+    res
+      .status(200)
+      .json({ message: "Email verified successfully, redirecting to login." });
   } catch (error) {
     console.error("OTP Verification Error:", error);
     res.status(500).json({ message: "Server error" });
@@ -242,7 +247,7 @@ export const resendOtp = async (req, res) => {
 
     const mailOptions = {
       from: process.env.EMAIL_USER, // Your email user
-      to: user.email.trim(),// Recipient's email
+      to: user.email.trim(), // Recipient's email
       subject: "Your Email Verification OTP By UPM Company",
       text: `Your OTP for email verification is: ${newOtp}`, // Plain text version
       html: `
@@ -274,5 +279,72 @@ export const resendOtp = async (req, res) => {
   } catch (error) {
     console.error("Resend OTP Error:", error);
     return res.status(500).json({ message: "Error resending OTP" });
+  }
+};
+
+// Controller function for user login
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if the password matches
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Check if email is verified
+    if (!user.email_verify) {
+      return res
+        .status(403)
+        .json({ message: "Please verify your email to login." });
+    }
+
+    // Check if the user is admin or has employee verification
+    if (!user.employee_verify) {
+      return res
+        .status(403)
+        .json({ message: "Your account is not verified by the admin." });
+    }
+
+    // Create JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, isAdmin: user.isAdmin },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h", // Token expires in 1 hour
+      }
+    );
+
+    // Set the JWT token in a cookie that expires in 1 hour
+    res.cookie("authToken", token, {
+      httpOnly: true, // Ensures the cookie is not accessible via JavaScript
+      secure: process.env.NODE_ENV === "production", // Secure cookies in production (HTTPS)
+      maxAge: 60 * 60 * 1000, // Cookie will expire in 1 hour (in milliseconds)
+      sameSite: "strict", // Helps protect against CSRF attacks
+    });
+
+    // Send response with token
+    res.status(200).json({
+      message: "Login successful",
+      token,
+    });
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
