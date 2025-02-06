@@ -3,13 +3,13 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 const EmailVerify = () => {
-  const [otp, setOtp] = useState(new Array(6).fill("")); // OTP input values
-  const [error, setError] = useState(""); // Error messages
-  const [loading, setLoading] = useState(false); // Loading state for verification
-  const [success, setSuccess] = useState(false); // Success state for verification
-  const [email, setEmail] = useState(""); // State to store email fetched from JWT
+  const [otp, setOtp] = useState(new Array(6).fill(""));
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [email, setEmail] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
 
-  // Fetch the email from the GET route when the component loads
   useEffect(() => {
     const fetchEmail = async () => {
       try {
@@ -24,9 +24,7 @@ const EmailVerify = () => {
         }
 
         const response = await axios.get("/api/auth/email-verify", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         setEmail(response.data.email);
@@ -38,7 +36,38 @@ const EmailVerify = () => {
     fetchEmail();
   }, []);
 
-  // Submit handler for OTP verification
+  const handleResendOtp = async () => {
+    setResendLoading(true);
+    try {
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("authToken="))
+        ?.split("=")[1];
+
+      const response = await axios.post(
+        "/api/auth/resend-otp",
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      Swal.fire({
+        title: "OTP Sent!",
+        text: response.data.message,
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: error.response?.data?.message || "Failed to resend OTP.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (otp.length !== 6) {
@@ -60,7 +89,7 @@ const EmailVerify = () => {
 
       if (response.data.message === "Email verified successfully") {
         setSuccess(true);
-        setError(""); // Clear any previous errors
+        setError("");
         Swal.fire({
           title: "Success!",
           text: "Email verified successfully!",
@@ -92,16 +121,12 @@ const EmailVerify = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-4">
       <div className="bg-white p-6 sm:p-8 rounded-lg shadow-lg w-full max-w-md sm:w-96">
-        <header className="flex justify-center items-center bg-blue-600 text-white w-16 h-16 rounded-full mx-auto mb-6">
-          <i className="bx bxs-check-shield text-3xl"></i>
-        </header>
         <h2 className="text-3xl font-semibold text-center text-indigo-600 mb-6">
           Verify Your Email
         </h2>
         <p className="text-lg text-center text-gray-700 mb-6">
-          We sent a 6-digit OTP to{" "}
-          <strong>{email ? email : "your email address"}</strong>. Please enter
-          it below.
+          We sent a 6-digit OTP to <strong>{email || "your email"}</strong>.
+          Please enter it below.
         </p>
 
         {error && (
@@ -117,10 +142,7 @@ const EmailVerify = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="otp"
-              className="block text-lg font-semibold text-gray-700"
-            >
+            <label className="block text-lg font-semibold text-gray-700">
               Enter OTP
             </label>
             <div className="grid grid-cols-6 gap-3">
@@ -130,16 +152,13 @@ const EmailVerify = () => {
                   <input
                     key={index}
                     type="text"
-                    id={`otp${index + 1}`}
-                    name={`otp${index + 1}`}
+                    maxLength="1"
                     value={otp[index] || ""}
                     onChange={(e) => {
                       const updatedOtp = [...otp];
                       updatedOtp[index] = e.target.value;
                       setOtp(updatedOtp);
                     }}
-                    maxLength="1"
-                    required
                     className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 ))}
@@ -154,6 +173,14 @@ const EmailVerify = () => {
             {loading ? "Verifying..." : "Verify OTP"}
           </button>
         </form>
+
+        <button
+          onClick={handleResendOtp}
+          disabled={resendLoading}
+          className="w-full py-2 mt-4 bg-gray-500 text-white font-semibold rounded-md hover:bg-gray-700 transition duration-300 disabled:bg-gray-300"
+        >
+          {resendLoading ? "Resending OTP..." : "Resend OTP"}
+        </button>
       </div>
     </div>
   );

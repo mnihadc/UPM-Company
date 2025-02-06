@@ -204,3 +204,75 @@ export const verifyEmailOtp = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Resend OTP Controller
+export const resendOtp = async (req, res) => {
+  try {
+    const token =
+      req.cookies.authToken || req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized. No token provided." });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate a new OTP
+    const newOtp = generateOtp();
+    user.otp = newOtp;
+    await user.save();
+
+    // Configure Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Email content
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER, // Your email user
+      to: user.email.trim(),// Recipient's email
+      subject: "Your Email Verification OTP By UPM Company",
+      text: `Your OTP for email verification is: ${newOtp}`, // Plain text version
+      html: `
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; color: #333; }
+              .container { max-width: 600px; margin: auto; background: #f4f4f4; padding: 20px; border-radius: 8px; }
+              .otp { font-size: 24px; font-weight: bold; color: #4070f4; text-align: center; }
+              .footer { text-align: center; font-size: 12px; color: #888; margin-top: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h2>Welcome to UPM Company!</h2>
+              <p>Resend OTP NEW ONE</p>
+              <p>We received a request to verify your email address. Please use the OTP below to complete the process:</p>
+              <div class="otp">${newOtp}</div>
+              <p class="footer">If you didn't request this, please ignore this email.</p>
+            </div>
+          </body>
+        </html>
+      `, // HTML version
+    };
+    // Send Email
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({ message: "New OTP sent successfully" });
+  } catch (error) {
+    console.error("Resend OTP Error:", error);
+    return res.status(500).json({ message: "Error resending OTP" });
+  }
+};
