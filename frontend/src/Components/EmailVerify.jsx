@@ -1,22 +1,44 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; // To capture the token from the URL (JWT token)
-import axios from "axios"; // For making API requests
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const EmailVerify = () => {
-  const { token } = useParams(); // Getting token from the URL
-  const [otp, setOtp] = useState(""); // Store OTP input
-  const [error, setError] = useState(""); // Store error message
-  const [loading, setLoading] = useState(false); // Store loading state
-  const [success, setSuccess] = useState(false); // Store success state
+  const [otp, setOtp] = useState(new Array(6).fill("")); // OTP input values
+  const [error, setError] = useState(""); // Error messages
+  const [loading, setLoading] = useState(false); // Loading state for verification
+  const [success, setSuccess] = useState(false); // Success state for verification
+  const [email, setEmail] = useState(""); // State to store email fetched from JWT
 
+  // Fetch the email from the GET route when the component loads
   useEffect(() => {
-    // If token doesn't exist or invalid, prompt user
-    if (!token) {
-      setError("Invalid or expired link.");
-    }
-  }, [token]);
+    const fetchEmail = async () => {
+      try {
+        const token = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("authToken="))
+          ?.split("=")[1];
 
-  // Handle form submission
+        if (!token) {
+          console.error("No auth token found.");
+          return;
+        }
+
+        const response = await axios.get("/api/auth/email-verify", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setEmail(response.data.email);
+      } catch (error) {
+        console.error("Error fetching email:", error.response?.data || error);
+      }
+    };
+
+    fetchEmail();
+  }, []);
+
+  // Submit handler for OTP verification
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (otp.length !== 6) {
@@ -26,19 +48,42 @@ const EmailVerify = () => {
     setLoading(true);
 
     try {
-      // Send OTP to backend for validation
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("authToken="))
+        ?.split("=")[1];
+
       const response = await axios.post("/api/auth/verify-email", {
+        otp: otp.join(""),
         token,
-        otp,
       });
 
-      if (response.data.success) {
+      if (response.data.message === "Email verified successfully") {
         setSuccess(true);
+        setError(""); // Clear any previous errors
+        Swal.fire({
+          title: "Success!",
+          text: "Email verified successfully!",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
       } else {
         setError("Invalid OTP. Please try again.");
+        Swal.fire({
+          title: "Error!",
+          text: "Invalid OTP. Please try again.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
       }
     } catch (error) {
       setError("Error while verifying OTP. Please try again.", error);
+      Swal.fire({
+        title: "Error!",
+        text: "There was an error while verifying the OTP.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     } finally {
       setLoading(false);
     }
@@ -54,10 +99,11 @@ const EmailVerify = () => {
           Verify Your Email
         </h2>
         <p className="text-lg text-center text-gray-700 mb-6">
-          We sent a 6-digit OTP to your email. Please enter it below.
+          We sent a 6-digit OTP to{" "}
+          <strong>{email ? email : "your email address"}</strong>. Please enter
+          it below.
         </p>
 
-        {/* Error or Success Message */}
         {error && (
           <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center">
             {error}
@@ -69,7 +115,6 @@ const EmailVerify = () => {
           </div>
         )}
 
-        {/* OTP Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
@@ -88,13 +133,11 @@ const EmailVerify = () => {
                     id={`otp${index + 1}`}
                     name={`otp${index + 1}`}
                     value={otp[index] || ""}
-                    onChange={(e) =>
-                      setOtp((prevOtp) => {
-                        const updatedOtp = [...prevOtp];
-                        updatedOtp[index] = e.target.value;
-                        return updatedOtp.join("");
-                      })
-                    }
+                    onChange={(e) => {
+                      const updatedOtp = [...otp];
+                      updatedOtp[index] = e.target.value;
+                      setOtp(updatedOtp);
+                    }}
                     maxLength="1"
                     required
                     className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -111,20 +154,6 @@ const EmailVerify = () => {
             {loading ? "Verifying..." : "Verify OTP"}
           </button>
         </form>
-
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Didnt receive the OTP?{" "}
-            <button
-              className="text-indigo-600 hover:underline"
-              onClick={() =>
-                setError("OTP resent. Please check your email again.")
-              }
-            >
-              Resend OTP
-            </button>
-          </p>
-        </div>
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import User from "../models/User.model.js";
 import validator from "validator";
 import nodemailer from "nodemailer";
 import crypto from "crypto"; // For generating OTPs
-
 // Helper function to generate OTP
 const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
@@ -116,6 +115,20 @@ export const signUp = async (req, res) => {
     // Send OTP email
     await transporter.sendMail(mailOptions);
 
+    // Generate JWT Token
+    const token = jwt.sign(
+      { id: savedUser._id, email: savedUser.email, role: savedUser.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" } // Token expires in 7 days
+    );
+
+    // Set cookie with JWT
+    res.cookie("authToken", token, {
+      httpOnly: true, // Prevent client-side JavaScript from accessing it
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+    });
     // Redirect to email verification page with the token
     res.status(201).json({
       message: "User created successfully. Check your email for OTP.",
@@ -123,6 +136,71 @@ export const signUp = async (req, res) => {
     });
   } catch (error) {
     console.error("SignUp Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getVerifyEmailPage = (req, res) => {
+  try {
+    const token =
+      req.cookies.authToken || req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized. No token provided." });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return res.status(200).json({ email: decoded.email });
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    return res.status(500).json({ error: "Error decoding the token." });
+  }
+};
+
+export const verifyEmailOtp = async (req, res) => {
+  try {
+    // Extract the token from request cookies or headers
+    const token =
+      req.cookies.authToken || req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized. No token provided." });
+    }
+
+    // Verify and decode the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const email = decoded.email; // Extract email from token
+
+    // Find the user in the database
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Extract OTP from request body
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({ message: "OTP is required" });
+    }
+
+    // Check if the OTP matches (convert both to strings)
+    if (String(user.otp) !== String(otp)) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Mark the user as verified
+    user.otp = null; // Remove OTP after successful verification
+    user.email_verify = true; // Assuming you have an `isVerified` field in your schema
+    await user.save();
+
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    console.error("OTP Verification Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
