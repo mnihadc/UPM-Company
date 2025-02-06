@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const EmailVerify = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
@@ -9,6 +10,7 @@ const EmailVerify = () => {
   const [success, setSuccess] = useState(false);
   const [email, setEmail] = useState("");
   const [resendLoading, setResendLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEmail = async () => {
@@ -87,7 +89,7 @@ const EmailVerify = () => {
         token,
       });
 
-      if (response.data.message === "Email verified successfully") {
+      if (response.data.message.includes("Email verified successfully")) {
         setSuccess(true);
         setError("");
         Swal.fire({
@@ -96,6 +98,7 @@ const EmailVerify = () => {
           icon: "success",
           confirmButtonText: "OK",
         });
+        navigate("/login"); // redirect to login page
       } else {
         setError("Invalid OTP. Please try again.");
         Swal.fire({
