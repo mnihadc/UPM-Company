@@ -79,7 +79,9 @@ const UserManagement = () => {
           <tbody>
             {users
               .filter((user) =>
-                user.username.toLowerCase().includes(search.toLowerCase())
+                [user.username, user.email, user.mobile.toString()].some(
+                  (field) => field.toLowerCase().includes(search.toLowerCase())
+                )
               )
               .map((user) => (
                 <tr key={user._id} className="hover:bg-gray-800">
@@ -95,8 +97,7 @@ const UserManagement = () => {
                   <td className="p-3 border-b">
                     {user.email_verify ? "✅ Verified" : "❌ Not Verified"}
                   </td>
-                  <td className="p-3 border-b">{user.otp || "N/A"}</td>{" "}
-                  {/* OTP Display */}
+                  <td className="p-3 border-b">{user.otp || "N/A"}</td>
                   <td className="p-3 border-b">
                     <input
                       type="checkbox"
@@ -113,16 +114,16 @@ const UserManagement = () => {
                   </td>
                   <td className="p-3 border-b flex gap-2">
                     <button
-                      className="p-2 bg-yellow-600 rounded hover:bg-yellow-500"
-                      onClick={() => handleBlock(user._id)}
-                    >
-                      <FaBan className="text-white" />
-                    </button>
-                    <button
                       className="p-2 bg-red-600 rounded hover:bg-red-500"
                       onClick={() => handleDelete(user._id)}
                     >
                       <FaTrash className="text-white" />
+                    </button>
+                    <button
+                      className="p-2 bg-yellow-600 rounded hover:bg-yellow-500"
+                      onClick={() => handleBlock(user._id)}
+                    >
+                      <FaBan className="text-white" />
                     </button>
                   </td>
                 </tr>
