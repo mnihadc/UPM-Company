@@ -6,8 +6,8 @@ import SignupForm from "./Pages/SignUp";
 import EmailVerify from "./Components/EmailVerify";
 import PandaLogin from "./Pages/Login";
 import PrivateRoute from "./Components/PrivateRoute";
-import UserMangement from "./Pages/UserMangement";
 import PrivateAdminRoute from "./Components/PrivateAdminRoute";
+import UserManagement from "./Pages/UserManagement";
 
 function App() {
   return (
@@ -23,7 +23,7 @@ function App() {
           </Route>
           {/*Admin Routes */}
           <Route element={<PrivateAdminRoute />}>
-            <Route path="/usermangement" element={<UserMangement />} />
+            <Route path="/usermangement" element={<UserManagement />} />
           </Route>
           {/*Auth Routes */}
           <Route path="/signup" element={<SignupForm />} />
