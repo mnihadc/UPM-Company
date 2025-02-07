@@ -8,6 +8,7 @@ import PandaLogin from "./Pages/Login";
 import PrivateRoute from "./Components/PrivateRoute";
 import PrivateAdminRoute from "./Components/PrivateAdminRoute";
 import UserManagement from "./Pages/UserManagement";
+import Profile from "./Pages/Profile";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           {/*User Routes */}
           <Route element={<PrivateRoute />}>
             <Route path="/" element={<Home />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
           {/*Admin Routes */}
           <Route element={<PrivateAdminRoute />}>
