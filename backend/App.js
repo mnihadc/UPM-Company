@@ -1,8 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import authRoutes from "./routes/auth.route.js";
 import cookieParser from "cookie-parser";
+
+import authRoutes from "./routes/auth.route.js";
+import adminUserManagement from "./routes/AdminUserManagement.route.js";
 
 dotenv.config();
 
@@ -17,6 +19,7 @@ const port = process.env.PORT;
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/admin-usermangement", adminUserManagement);
 
 // Connect to MongoDB
 mongoose
