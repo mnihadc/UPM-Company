@@ -283,6 +283,7 @@ export const resendOtp = async (req, res) => {
 };
 
 // Controller function for user login
+
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -293,19 +294,14 @@ export const loginUser = async (req, res) => {
         .json({ message: "Email and password are required" });
     }
 
-    // Find the user by email
+    // Find user by email
     const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Check if the password matches
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    // Check password
+    const isMatch = bcrypt.compareSync(password, user.password);
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid credentials" });
 
     // Check if email is verified
     if (!user.email_verify) {
@@ -314,37 +310,40 @@ export const loginUser = async (req, res) => {
         .json({ message: "Please verify your email to login." });
     }
 
-    // Check if the user is admin or has employee verification
+    // Check if user is admin or employee verified
     if (!user.employee_verify) {
       return res
         .status(403)
         .json({ message: "Your account is not verified by the admin." });
     }
 
-    // Create JWT token
+    // Generate JWT Token
     const token = jwt.sign(
-      { userId: user._id, email: user.email, isAdmin: user.isAdmin },
+      { id: user._id, email: user.email, isAdmin: user.isAdmin },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "1h", // Token expires in 1 hour
-      }
+      { expiresIn: "1h" }
     );
 
-    // Set the JWT token in a cookie that expires in 1 hour
+    // Store token in httpOnly cookie
     res.cookie("authToken", token, {
-      httpOnly: true, // Ensures the cookie is not accessible via JavaScript
-      secure: process.env.NODE_ENV === "production", // Secure cookies in production (HTTPS)
-      maxAge: 60 * 60 * 1000, // Cookie will expire in 1 hour (in milliseconds)
-      sameSite: "strict", // Helps protect against CSRF attacks
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 1000, // 1 hour
+      sameSite: "strict",
     });
 
-    // Send response with token
+    // Send only necessary user details to Redux
     res.status(200).json({
       message: "Login successful",
-      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      },
     });
   } catch (error) {
     console.error("Login Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 };

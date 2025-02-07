@@ -2,42 +2,61 @@ import { useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  signInStart,
+  signInSuccess,
+  signInFailure,
+} from "../Redux/user/userSlice";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { loading } = useSelector((state) => state.user); // Getting loading state from Redux
 
+  // Handle Input Change
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value, // Dynamically updating formData
+    });
+  };
+
+  // Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    dispatch(signInStart()); // Start loading state
 
     try {
-      const response = await axios.post("/api/auth/login", { email, password });
+      const response = await axios.post("/api/auth/login", formData);
 
-      // Save the JWT token in localStorage or cookies
+      // Save token in localStorage
       localStorage.setItem("authToken", response.data.token);
 
+      // Dispatch success with user data
+      dispatch(signInSuccess(response.data));
+
+      // Show success message
       Swal.fire({
         title: "Login Successful",
-        text: response.data.message,
+        text: "You have successfully logged in.",
         icon: "success",
         confirmButtonText: "OK",
       });
 
-      // Navigate to the dashboard or home page
-      navigate("/dashboard"); // or wherever you want to redirect after login
+      // Navigate to the dashboard
+      navigate("/dashboard");
     } catch (error) {
+      const errorMessage = error.response?.data?.message || "Login failed.";
+      dispatch(signInFailure(errorMessage));
+
       Swal.fire({
         title: "Error!",
-        text:
-          error.response?.data?.message || "Login failed. Please try again.",
+        text: errorMessage,
         icon: "error",
         confirmButtonText: "OK",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -58,8 +77,9 @@ const Login = () => {
             </label>
             <input
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
@@ -71,8 +91,9 @@ const Login = () => {
             </label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             />
