@@ -6,6 +6,8 @@ import SignupForm from "./Pages/SignUp";
 import EmailVerify from "./Components/EmailVerify";
 import PandaLogin from "./Pages/Login";
 import PrivateRoute from "./Components/PrivateRoute";
+import UserMangement from "./Pages/UserMangement";
+import PrivateAdminRoute from "./Components/PrivateAdminRoute";
 
 function App() {
   return (
@@ -15,9 +17,15 @@ function App() {
         {" "}
         {/* Adds padding to avoid navbar overlap */}
         <Routes>
+          {/*User Routes */}
           <Route element={<PrivateRoute />}>
             <Route path="/" element={<Home />} />
           </Route>
+          {/*Admin Routes */}
+          <Route element={<PrivateAdminRoute />}>
+            <Route path="/usermangement" element={<UserMangement />} />
+          </Route>
+          {/*Auth Routes */}
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/login" element={<PandaLogin />} />
           <Route path="/email-verify" element={<EmailVerify />} />
