@@ -1,8 +1,9 @@
 import { useState } from "react";
-
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const { currentUser } = useSelector((state) => state.user);
   return (
     <nav className="bg-blue-800 p-4 flex justify-between items-center fixed w-full">
       <div className="text-2xl font-bold text-white">UPM_Company</div>
@@ -56,14 +57,17 @@ function Navbar() {
             Contact
           </a>
         </li>
-        <li>
-          <a
-            href="/login"
-            className="text-white text-lg hover:underline border px-4 py-2 rounded-md border-white"
-          >
-            Login
-          </a>
-        </li>
+        <Link to="/profile">
+          {currentUser ? (
+            <img
+              className="rounded-full h-7 w-7 object-cover"
+              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvG_T2e_jE-VxZCIkDp0h6wPskEtxsXcwbcA&s"
+              alt="profile"
+            />
+          ) : (
+            <li className="text-slate-700 hover:underline">Sign-In</li>
+          )}
+        </Link>
       </ul>
     </nav>
   );
