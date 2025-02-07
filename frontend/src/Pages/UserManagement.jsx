@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { FaTrash, FaBan } from "react-icons/fa";
+import Swal from "sweetalert2";
+import { FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -28,23 +29,46 @@ const UserManagement = () => {
     }
   };
 
-  const handleBlock = async (id) => {
-    try {
-      await axios.put(`/api/admin-usermangement/block-user/${id}`);
-      fetchUsers();
-    } catch (error) {
-      console.error("Error blocking user", error);
-    }
-  };
+  const handleEmployeeVerifyToggle = async (id, username, currentStatus) => {
+    const result = await Swal.fire({
+      title: `Are you sure?`,
+      text: `Do you want to ${
+        currentStatus ? "remove" : "verify"
+      } employee status for ${username}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: `Yes, ${currentStatus ? "remove" : "verify"} it!`,
+    });
 
-  const handleAdminToggle = async (id, isAdmin) => {
+    if (!result.isConfirmed) return;
+
     try {
-      await axios.put(`/api/admin-usermangement/update-admin/${id}`, {
-        isAdmin: !isAdmin,
+      await axios.put(`/api/admin-usermangement/update-employee-verify/${id}`, {
+        employee_verify: !currentStatus,
       });
-      fetchUsers();
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === id ? { ...user, employee_verify: !currentStatus } : user
+        )
+      );
+
+      Swal.fire({
+        title: "Success!",
+        text: `Employee verification status for ${username} has been updated.`,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
-      console.error("Error updating admin status", error);
+      Swal.fire({
+        title: "Error!",
+        text: "There was an issue updating the status.",
+        icon: "error",
+      });
+      console.error("Error updating employee verification", error);
     }
   };
 
@@ -91,8 +115,27 @@ const UserManagement = () => {
                   <td className="p-3 border-b">{user.gender}</td>
                   <td className="p-3 border-b">{user.role}</td>
                   <td className="p-3 border-b">{user.email}</td>
-                  <td className="p-3 border-b">
-                    {user.employee_verify ? "✅ Verified" : "❌ Not Verified"}
+                  <td
+                    className="p-3 border-b cursor-pointer flex items-center gap-2"
+                    onClick={() =>
+                      handleEmployeeVerifyToggle(
+                        user._id,
+                        user.username,
+                        user.employee_verify
+                      )
+                    }
+                  >
+                    {user.employee_verify ? (
+                      <>
+                        <FaCheckCircle className="text-green-500 text-lg" />
+                        <span className="text-green-500">Verified</span>
+                      </>
+                    ) : (
+                      <>
+                        <FaTimesCircle className="text-red-500 text-lg" />
+                        <span className="text-red-500">Not Verified</span>
+                      </>
+                    )}
                   </td>
                   <td className="p-3 border-b">
                     {user.email_verify ? "✅ Verified" : "❌ Not Verified"}
@@ -102,7 +145,6 @@ const UserManagement = () => {
                     <input
                       type="checkbox"
                       checked={user.isAdmin}
-                      onChange={() => handleAdminToggle(user._id, user.isAdmin)}
                       className="cursor-pointer"
                     />
                   </td>
@@ -118,12 +160,6 @@ const UserManagement = () => {
                       onClick={() => handleDelete(user._id)}
                     >
                       <FaTrash className="text-white" />
-                    </button>
-                    <button
-                      className="p-2 bg-yellow-600 rounded hover:bg-yellow-500"
-                      onClick={() => handleBlock(user._id)}
-                    >
-                      <FaBan className="text-white" />
                     </button>
                   </td>
                 </tr>
