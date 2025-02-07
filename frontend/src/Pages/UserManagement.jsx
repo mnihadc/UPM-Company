@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { FaEdit, FaTrash, FaBan } from "react-icons/fa"; // New icon library
+import { FaTrash, FaBan } from "react-icons/fa";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -21,7 +21,7 @@ const UserManagement = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/users/${id}`);
+      await axios.delete(`/api/admin-usermangement/delete-user/${id}`);
       setUsers(users.filter((user) => user._id !== id));
     } catch (error) {
       console.error("Error deleting user", error);
@@ -30,10 +30,21 @@ const UserManagement = () => {
 
   const handleBlock = async (id) => {
     try {
-      await axios.put(`/api/users/${id}/block`);
+      await axios.put(`/api/admin-usermangement/block-user/${id}`);
       fetchUsers();
     } catch (error) {
       console.error("Error blocking user", error);
+    }
+  };
+
+  const handleAdminToggle = async (id, isAdmin) => {
+    try {
+      await axios.put(`/api/admin-usermangement/update-admin/${id}`, {
+        isAdmin: !isAdmin,
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error("Error updating admin status", error);
     }
   };
 
@@ -56,6 +67,12 @@ const UserManagement = () => {
               <th className="p-3 border-b">Gender</th>
               <th className="p-3 border-b">Role</th>
               <th className="p-3 border-b">Email</th>
+              <th className="p-3 border-b">Employee Verified</th>
+              <th className="p-3 border-b">Email Verified</th>
+              <th className="p-3 border-b">OTP</th>
+              <th className="p-3 border-b">Admin</th>
+              <th className="p-3 border-b">CreatedAt</th>
+              <th className="p-3 border-b">UpdatedAt</th>
               <th className="p-3 border-b">Actions</th>
             </tr>
           </thead>
@@ -72,21 +89,40 @@ const UserManagement = () => {
                   <td className="p-3 border-b">{user.gender}</td>
                   <td className="p-3 border-b">{user.role}</td>
                   <td className="p-3 border-b">{user.email}</td>
+                  <td className="p-3 border-b">
+                    {user.employee_verify ? "✅ Verified" : "❌ Not Verified"}
+                  </td>
+                  <td className="p-3 border-b">
+                    {user.email_verify ? "✅ Verified" : "❌ Not Verified"}
+                  </td>
+                  <td className="p-3 border-b">{user.otp || "N/A"}</td>{" "}
+                  {/* OTP Display */}
+                  <td className="p-3 border-b">
+                    <input
+                      type="checkbox"
+                      checked={user.isAdmin}
+                      onChange={() => handleAdminToggle(user._id, user.isAdmin)}
+                      className="cursor-pointer"
+                    />
+                  </td>
+                  <td className="p-3 border-b">
+                    {new Date(user.createdAt).toLocaleString()}
+                  </td>
+                  <td className="p-3 border-b">
+                    {new Date(user.updatedAt).toLocaleString()}
+                  </td>
                   <td className="p-3 border-b flex gap-2">
-                    <button className="p-2 bg-blue-600 rounded hover:bg-blue-500">
-                      <FaEdit className="text-white" />
+                    <button
+                      className="p-2 bg-yellow-600 rounded hover:bg-yellow-500"
+                      onClick={() => handleBlock(user._id)}
+                    >
+                      <FaBan className="text-white" />
                     </button>
                     <button
                       className="p-2 bg-red-600 rounded hover:bg-red-500"
                       onClick={() => handleDelete(user._id)}
                     >
                       <FaTrash className="text-white" />
-                    </button>
-                    <button
-                      className="p-2 bg-yellow-600 rounded hover:bg-yellow-500"
-                      onClick={() => handleBlock(user._id)}
-                    >
-                      <FaBan className="text-white" />
                     </button>
                   </td>
                 </tr>
