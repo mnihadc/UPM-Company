@@ -5,6 +5,7 @@ import Footer from "./Components/Footer";
 import SignupForm from "./Pages/SignUp";
 import EmailVerify from "./Components/EmailVerify";
 import PandaLogin from "./Pages/Login";
+import PrivateRoute from "./Components/PrivateRoute";
 
 function App() {
   return (
@@ -14,7 +15,9 @@ function App() {
         {" "}
         {/* Adds padding to avoid navbar overlap */}
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route element={<PrivateRoute />}>
+            <Route path="/" element={<Home />} />
+          </Route>
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/login" element={<PandaLogin />} />
           <Route path="/email-verify" element={<EmailVerify />} />
