@@ -20,11 +20,37 @@ const UserManagement = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, username) => {
+    const result = await Swal.fire({
+      title: `Are you sure?`,
+      text: `Do you really want to delete ${username}? This action cannot be undone!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       await axios.delete(`/api/admin-usermangement/delete-user/${id}`);
       setUsers(users.filter((user) => user._id !== id));
+
+      Swal.fire({
+        title: "Deleted!",
+        text: `${username} has been removed successfully.`,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: "There was an issue deleting the user.",
+        icon: "error",
+      });
       console.error("Error deleting user", error);
     }
   };
@@ -157,7 +183,7 @@ const UserManagement = () => {
                   <td className="p-3 border-b flex gap-2">
                     <button
                       className="p-2 bg-red-600 rounded hover:bg-red-500"
-                      onClick={() => handleDelete(user._id)}
+                      onClick={() => handleDelete(user._id, user.username)}
                     >
                       <FaTrash className="text-white" />
                     </button>
