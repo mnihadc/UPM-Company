@@ -347,3 +347,18 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ message: "Server error. Please try again later." });
   }
 };
+
+export const logoutUser = (req, res) => {
+  try {
+    res.clearCookie("session", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Logout failed", error: error.message });
+  }
+};

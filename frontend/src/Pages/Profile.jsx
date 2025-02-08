@@ -1,4 +1,12 @@
+import Swal from "sweetalert2";
+import { useDispatch } from "react-redux";
+import {
+  signoutUserStart,
+  signoutUserSuccess,
+  signoutUserFailure,
+} from "../Redux/user/userSlice";
 const Profile = () => {
+  const dispatch = useDispatch();
   const user = {
     username: "John Doe",
     email: "johndoe@example.com",
@@ -22,6 +30,45 @@ const Profile = () => {
       premiumMember: 40,
       superPremiumMember: 20,
     },
+  };
+  const handleLogout = async () => {
+    const confirmLogout = await Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, logout!",
+    });
+
+    if (confirmLogout.isConfirmed) {
+      try {
+        dispatch(signoutUserStart()); // Set loading state
+
+        const response = await fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          dispatch(signoutUserSuccess()); // Clear user state
+          localStorage.removeItem("token"); // Remove token
+          await Swal.fire(
+            "Logged Out!",
+            "You have been logged out.",
+            "success"
+          );
+          window.location.href = "/login"; // Redirect to login
+        } else {
+          dispatch(signoutUserFailure("Logout failed! Please try again."));
+          Swal.fire("Error", "Logout failed! Please try again.", "error");
+        }
+      } catch (error) {
+        dispatch(signoutUserFailure(error.message));
+        Swal.fire("Error", "Something went wrong!", "error");
+      }
+    }
   };
 
   return (
@@ -67,13 +114,17 @@ const Profile = () => {
                 />
               </div>
               <div className="flex justify-between">
-                <button className="bg-blue-600 px-4 py-2 rounded">
+                <button type="button" className="bg-blue-600 px-4 py-2 rounded">
                   Save Changes
                 </button>
-                <button className="bg-amber-500 px-4 py-2 rounded">
+                <button
+                  type="button"
+                  className="bg-amber-500 px-4 py-2 rounded"
+                  onClick={handleLogout}
+                >
                   Logout
                 </button>
-                <button className="bg-red-600 px-4 py-2 rounded">
+                <button type="button" className="bg-red-600 px-4 py-2 rounded">
                   Delete Account
                 </button>
               </div>
