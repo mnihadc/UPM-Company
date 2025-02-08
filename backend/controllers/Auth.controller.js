@@ -432,3 +432,36 @@ export const sendOtpToEmail = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if OTP is expired
+    if (user.otpExpire < new Date()) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    // Compare OTP
+    const isOtpValid = await bcrypt.compare(otp, user.otp);
+    if (!isOtpValid) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // Clear OTP after verification
+    user.otp = null;
+    user.otpExpire = null;
+    await user.save();
+
+    res.json({ message: "OTP verified successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -30,7 +30,7 @@ const OTP = () => {
     const otpCode = otp.join("");
 
     try {
-      const response = await axios.post("/api/auth/verify-otp", {
+      const response = await axios.post("/api/auth//verifyOtp", {
         email,
         otp: otpCode,
       });
