@@ -312,9 +312,10 @@ export const loginUser = async (req, res) => {
 
     // Check if user is admin or employee verified
     if (!user.employee_verify) {
-      return res
-        .status(403)
-        .json({ message: "Your account is not verified by the admin." });
+      return res.status(403).json({
+        message:
+          "Your account is not verified by the admin. Please contact to admin",
+      });
     }
 
     // Generate JWT Token

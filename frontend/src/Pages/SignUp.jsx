@@ -83,11 +83,11 @@ const SignupForm = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-400 to-purple-600 p-4">
+    <div className="flex justify-center items-center min-h-screen bg-[#F3F4F6] p-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl flex flex-col md:flex-row gap-8">
         <div className="flex-1">
           <div className="flex flex-col items-center mb-6">
-            <h2 className="text-3xl font-semibold text-center mb-4">
+            <h2 className="text-3xl font-semibold text-[#1E3A8A] text-center mb-4">
               Create an Account
             </h2>
             <div className="flex justify-center items-center flex-col text-center mb-6">
@@ -110,7 +110,7 @@ const SignupForm = () => {
               />
               <label
                 htmlFor="avatar-upload"
-                className="cursor-pointer bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-300"
+                className="cursor-pointer bg-[#10B981] text-white py-2 px-4 rounded-lg hover:bg-[#0F9D7A] transition-colors duration-300"
               >
                 Change Image
               </label>
@@ -120,7 +120,9 @@ const SignupForm = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-semibold text-lg">Username</label>
+                <label className="block font-semibold text-lg text-[#374151]">
+                  Username
+                </label>
                 <input
                   type="text"
                   name="username"
@@ -128,11 +130,13 @@ const SignupForm = () => {
                   value={formData.username}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
               <div>
-                <label className="block font-semibold text-lg">Age</label>
+                <label className="block font-semibold text-lg text-[#374151]">
+                  Age
+                </label>
                 <input
                   type="number"
                   name="age"
@@ -140,16 +144,18 @@ const SignupForm = () => {
                   value={formData.age}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-semibold text-lg">Gender</label>
+                <label className="block font-semibold text-lg text-[#374151]">
+                  Gender
+                </label>
                 <div className="flex gap-6">
-                  <label className="flex items-center">
+                  <label className="flex items-center text-[#374151]">
                     <input
                       type="radio"
                       name="gender"
@@ -160,7 +166,7 @@ const SignupForm = () => {
                     />
                     <span>Male</span>
                   </label>
-                  <label className="flex items-center">
+                  <label className="flex items-center text-[#374151]">
                     <input
                       type="radio"
                       name="gender"
@@ -174,7 +180,7 @@ const SignupForm = () => {
                 </div>
               </div>
               <div>
-                <label className="block font-semibold text-lg">
+                <label className="block font-semibold text-lg text-[#374151]">
                   Phone Number
                 </label>
                 <input
@@ -184,14 +190,16 @@ const SignupForm = () => {
                   value={formData.mobile}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-semibold text-lg">Email</label>
+                <label className="block font-semibold text-lg text-[#374151]">
+                  Email
+                </label>
                 <input
                   type="email"
                   name="email"
@@ -199,17 +207,19 @@ const SignupForm = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
               <div>
-                <label className="block font-semibold text-lg">Role</label>
+                <label className="block font-semibold text-lg text-[#374151]">
+                  Role
+                </label>
                 <select
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 >
                   <option value="">Select a Role</option>
                   {roles.map((role, index) => (
@@ -223,7 +233,9 @@ const SignupForm = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-semibold text-lg">Password</label>
+                <label className="block font-semibold text-lg text-[#374151]">
+                  Password
+                </label>
                 <input
                   type="password"
                   name="password"
@@ -231,11 +243,11 @@ const SignupForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
               <div>
-                <label className="block font-semibold text-lg">
+                <label className="block font-semibold text-lg text-[#374151]">
                   Confirm Password
                 </label>
                 <input
@@ -245,15 +257,15 @@ const SignupForm = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-4 mt-6 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              disabled={loading} // Disable the button while loading
+              className="w-full py-4 mt-6 bg-[#2563EB] text-white rounded-md hover:bg-[#1E40AF] transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]"
+              disabled={loading}
             >
               {loading ? (
                 <div className="spinner-border animate-spin text-white">

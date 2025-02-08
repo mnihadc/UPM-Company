@@ -13,44 +13,33 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading } = useSelector((state) => state.user); // Getting loading state from Redux
+  const { loading } = useSelector((state) => state.user);
 
-  // Handle Input Change
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value, // Dynamically updating formData
+      [e.target.name]: e.target.value,
     });
   };
 
-  // Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(signInStart()); // Start loading state
+    dispatch(signInStart());
 
     try {
       const response = await axios.post("/api/auth/login", formData);
-
-      // Save token in localStorage
       localStorage.setItem("authToken", response.data.token);
-
-      // Dispatch success with user data
       dispatch(signInSuccess(response.data));
-
-      // Show success message
       Swal.fire({
         title: "Login Successful",
         text: "You have successfully logged in.",
         icon: "success",
         confirmButtonText: "OK",
       });
-
-      // Navigate to the dashboard
-      navigate("/dashboard");
+      navigate("/");
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Login failed.";
       dispatch(signInFailure(errorMessage));
-
       Swal.fire({
         title: "Error!",
         text: errorMessage,
@@ -61,18 +50,18 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 p-6">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-6">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg sm:w-96">
-        <h2 className="text-4xl font-semibold text-center text-indigo-600 mb-6">
+        <h2 className="text-4xl font-semibold text-center text-[#1E3A8A] mb-6">
           Welcome Back!
         </h2>
-        <p className="text-xl text-center text-gray-700 mb-8">
+        <p className="text-xl text-center text-[#374151] mb-8">
           Sign in to continue to your dashboard.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-lg font-semibold text-gray-700 mb-2">
+            <label className="block text-lg font-semibold text-[#374151] mb-2">
               Email
             </label>
             <input
@@ -80,13 +69,13 @@ const Login = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-4 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-lg font-semibold text-gray-700 mb-2">
+            <label className="block text-lg font-semibold text-[#374151] mb-2">
               Password
             </label>
             <input
@@ -94,7 +83,7 @@ const Login = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full p-4 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               required
             />
           </div>
@@ -102,13 +91,13 @@ const Login = () => {
           <div className="flex justify-between items-center">
             <a
               href="/forgot-password"
-              className="text-indigo-600 text-sm hover:text-indigo-800 transition duration-200"
+              className="text-[#10B981] text-sm hover:text-[#1E3A8A] transition duration-200"
             >
               Forgot Password?
             </a>
             <a
               href="/signup"
-              className="text-indigo-600 text-sm hover:text-indigo-800 transition duration-200"
+              className="text-[#10B981] text-sm hover:text-[#1E3A8A] transition duration-200"
             >
               Create an Account
             </a>
@@ -117,7 +106,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition duration-300 disabled:bg-gray-400"
+            className="w-full py-3 bg-[#2563EB] text-white font-semibold rounded-md hover:bg-[#1E3A8A] transition duration-300 disabled:bg-gray-400"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
