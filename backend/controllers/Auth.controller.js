@@ -363,3 +363,72 @@ export const logoutUser = (req, res) => {
       .json({ message: "Logout failed", error: error.message });
   }
 };
+
+export const sendOtpToEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min expiry
+
+    // Hash OTP before storing
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    // Update user record with OTP
+    user.otp = hashedOtp;
+    user.otpExpire = expiresAt;
+    await user.save();
+
+    // Configure Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Email content
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER, // Your email user
+      to: user.email.trim(), // Recipient's email
+      subject: "Your Forgot password OTP By UPM Company",
+      text: `Your OTP for Forgot Password is: ${otp}`, // Plain text version
+      html: `
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; color: #333; }
+              .container { max-width: 600px; margin: auto; background: #f4f4f4; padding: 20px; border-radius: 8px; }
+              .otp { font-size: 24px; font-weight: bold; color: #4070f4; text-align: center; }
+              .footer { text-align: center; font-size: 12px; color: #888; margin-top: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h2>Welcome to UPM Company!</h2>
+              <p>We received a request to forgotpassword otp to your email address. Please use the OTP below to complete the process:</p>
+              <div class="otp">${otp}</div>
+              <p class="footer">If you didn't request this, please ignore this email.</p>
+            </div>
+          </body>
+        </html>
+      `, // HTML version
+    };
+    // Send Email
+    await transporter.sendMail(mailOptions);
+
+    res.json({ message: "OTP sent successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

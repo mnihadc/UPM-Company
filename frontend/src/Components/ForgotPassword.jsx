@@ -1,11 +1,42 @@
 import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // For redirection
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Reset link sent to:", email);
+    setLoading(true);
+
+    try {
+      const response = await axios.post("/api/auth/forgotpassword-email", {
+        email,
+      });
+
+      // Show success alert
+      Swal.fire({
+        icon: "success",
+        title: "OTP Sent!",
+        text: response.data.message,
+        confirmButtonColor: "#4F46E5",
+      }).then(() => {
+        // Redirect to OTP page with email
+        navigate("/otp-verification", { state: { email } });
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: err.response?.data?.message || "Something went wrong!",
+        confirmButtonColor: "#EF4444",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -15,7 +46,7 @@ const ForgotPassword = () => {
           Forgot Password
         </h2>
         <p className="text-gray-700 text-center mb-6">
-          Enter your email to receive a password reset link.
+          Enter your email to receive a password reset OTP.
         </p>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -31,9 +62,10 @@ const ForgotPassword = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
+            className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:opacity-50"
+            disabled={loading}
           >
-            Send Reset Link
+            {loading ? "Sending..." : "Send OTP"}
           </button>
         </form>
       </div>
