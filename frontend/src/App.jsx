@@ -10,6 +10,7 @@ import PrivateAdminRoute from "./Components/PrivateAdminRoute";
 import UserManagement from "./Pages/UserManagement";
 import Profile from "./Pages/Profile";
 import ForgotPassword from "./Components/ForgotPassword";
+import OTP from "./Components/OTP";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
           <Route path="/login" element={<PandaLogin />} />
           <Route path="/email-verify" element={<EmailVerify />} />
           <Route path="/forgotpassword-email" element={<ForgotPassword />} />
+          <Route path="/otp-verification" element={<OTP />} />
         </Routes>
       </div>
       <Footer />
