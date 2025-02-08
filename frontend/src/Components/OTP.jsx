@@ -7,7 +7,10 @@ const OTP = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email || ""; // Get email from state
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""]); // 6-digit OTP
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Handle OTP Input Changes
@@ -23,31 +26,42 @@ const OTP = () => {
     }
   };
 
-  // Handle OTP Submission
+  // Handle OTP and Password Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const otpCode = otp.join("");
+
+    if (newPassword !== confirmPassword) {
+      Swal.fire({
+        icon: "error",
+        title: "Passwords do not match!",
+        text: "Please enter the same password in both fields.",
+        confirmButtonColor: "#EF4444",
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
-      const response = await axios.post("/api/auth//verifyOtp", {
+      const response = await axios.post("/api/auth/verifyOtp", {
         email,
-        otp: otpCode,
+        otp: otp.join(""),
+        newPassword,
       });
 
       Swal.fire({
         icon: "success",
-        title: "OTP Verified!",
+        title: "Success!",
         text: response.data.message,
         confirmButtonColor: "#4F46E5",
       }).then(() => {
-        navigate("/reset-password", { state: { email } });
+        navigate("/login"); // Redirect to login after success
       });
     } catch (err) {
       Swal.fire({
         icon: "error",
-        title: "Invalid OTP",
-        text: err.response?.data?.message || "Please enter the correct OTP",
+        title: "Error",
+        text: err.response?.data?.message || "Something went wrong.",
         confirmButtonColor: "#EF4444",
       });
     } finally {
@@ -84,7 +98,9 @@ const OTP = () => {
         <p className="text-gray-700 text-center mb-6">
           Enter the OTP sent to <span className="font-bold">{email}</span>
         </p>
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {/* OTP Inputs */}
           <div className="flex justify-center gap-2">
             {otp.map((digit, index) => (
               <input
@@ -99,17 +115,37 @@ const OTP = () => {
             ))}
           </div>
 
+          {/* New Password */}
+          <input
+            type="password"
+            placeholder="New Password"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+
+          {/* Confirm Password */}
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+
           <button
             type="submit"
             className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition duration-300 disabled:opacity-50"
             disabled={loading}
           >
-            {loading ? "Verifying..." : "Verify OTP"}
+            {loading ? "Processing..." : "Verify & Reset Password"}
           </button>
         </form>
 
         <div className="text-center mt-4">
-          <p className="text-gray-600">Didnt receive OTP?</p>
+          <p className="text-gray-600">Didn’t receive OTP?</p>
           <button
             onClick={handleResendOtp}
             className="text-indigo-600 font-semibold hover:underline"

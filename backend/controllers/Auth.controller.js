@@ -435,7 +435,7 @@ export const sendOtpToEmail = async (req, res) => {
 
 export const verifyOtp = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const { email, otp, newPassword } = req.body;
 
     // Check if user exists
     const user = await User.findOne({ email });
@@ -454,12 +454,26 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // Clear OTP after verification
+    // Validate Password Strength
+    if (newPassword.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters long" });
+    }
+
+    // Hash New Password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update User Password & Clear OTP
+    user.password = hashedPassword;
     user.otp = null;
     user.otpExpire = null;
     await user.save();
 
-    res.json({ message: "OTP verified successfully" });
+    res.json({
+      message:
+        "Password reset successful! You can now log in with your new password.",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
