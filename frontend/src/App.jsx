@@ -9,6 +9,7 @@ import PrivateRoute from "./Components/PrivateRoute";
 import PrivateAdminRoute from "./Components/PrivateAdminRoute";
 import UserManagement from "./Pages/UserManagement";
 import Profile from "./Pages/Profile";
+import ForgotPassword from "./Components/ForgotPassword";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/login" element={<PandaLogin />} />
           <Route path="/email-verify" element={<EmailVerify />} />
+          <Route path="/forgotpassword-email" element={<ForgotPassword />} />
         </Routes>
       </div>
       <Footer />

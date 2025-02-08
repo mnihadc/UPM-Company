@@ -90,7 +90,7 @@ const Login = () => {
 
           <div className="flex justify-between items-center">
             <a
-              href="/forgot-password"
+              href="/forgotpassword-email"
               className="text-[#10B981] text-sm hover:text-[#1E3A8A] transition duration-200"
             >
               Forgot Password?
