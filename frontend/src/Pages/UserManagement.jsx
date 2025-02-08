@@ -7,6 +7,9 @@ const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
 
+  const [emailFilter, setEmailFilter] = useState("all");
+  const [roleFilter, setRoleFilter] = useState("");
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -97,16 +100,61 @@ const UserManagement = () => {
       console.error("Error updating employee verification", error);
     }
   };
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = [
+      user.username,
+      user.email,
+      user.mobile.toString(),
+    ].some((field) => field.toLowerCase().includes(search.toLowerCase()));
+
+    const matchesEmailFilter =
+      emailFilter === "all" ||
+      (emailFilter === "emailVerifiedAdminPending" &&
+        user.email_verify &&
+        !user.employee_verify) ||
+      (emailFilter === "emailNotVerified" && !user.email_verify);
+
+    const matchesRoleFilter = roleFilter === "" || user.role === roleFilter;
+
+    return matchesSearch && matchesEmailFilter && matchesRoleFilter;
+  });
 
   return (
     <div className="p-6 pt-20 bg-black text-white min-h-screen w-full overflow-x-auto">
-      <input
-        type="text"
-        placeholder="Search users..."
-        className="mb-4 w-full p-2 border border-gray-600 bg-gray-900 text-white rounded"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div className="flex gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Search users..."
+          className="mb-4 w-full p-2 border border-gray-600 bg-gray-900 text-white rounded"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select
+          className="p-2 border border-gray-600 bg-gray-900 text-white rounded"
+          value={emailFilter}
+          onChange={(e) => setEmailFilter(e.target.value)}
+        >
+          <option value="all">All Users</option>
+          <option value="emailVerifiedAdminPending">
+            Email Verified (Admin Pending)
+          </option>
+          <option value="emailNotVerified">Email Not Verified</option>
+        </select>
+
+        <select
+          className="p-2 border border-gray-600 bg-gray-900 text-white rounded"
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+        >
+          <option value="">All Roles</option>
+          <option value="Manager Senior">Manager Senior</option>
+          <option value="Manager Junior">Manager Junior</option>
+          <option value="Sales Executive Senior">Sales Executive Senior</option>
+          <option value="Sales Executive Junior">Sales Executive Junior</option>
+          <option value="Technician">Technician</option>
+          <option value="Office Staff">Office Staff</option>
+        </select>
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full border border-gray-700 text-left min-w-max">
           <thead className="bg-gray-800">
@@ -127,74 +175,67 @@ const UserManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {users
-              .filter((user) =>
-                [user.username, user.email, user.mobile.toString()].some(
-                  (field) => field.toLowerCase().includes(search.toLowerCase())
-                )
-              )
-              .map((user) => (
-                <tr key={user._id} className="hover:bg-gray-800">
-                  <td className="p-3 border-b">{user.username}</td>
-                  <td className="p-3 border-b">{user.age}</td>
-                  <td className="p-3 border-b">{user.mobile}</td>
-                  <td className="p-3 border-b">{user.gender}</td>
-                  <td className="p-3 border-b">{user.role}</td>
-                  <td className="p-3 border-b">{user.email}</td>
-                  <td
-                    className="p-3 border-b cursor-pointer flex items-center gap-2"
-                    onClick={() =>
-                      handleEmployeeVerifyToggle(
-                        user._id,
-                        user.username,
-                        user.employee_verify
-                      )
-                    }
+            {filteredUsers.map((user) => (
+              <tr key={user._id} className="hover:bg-gray-800">
+                <td className="p-3 border-b">{user.username}</td>
+                <td className="p-3 border-b">{user.age}</td>
+                <td className="p-3 border-b">{user.mobile}</td>
+                <td className="p-3 border-b">{user.gender}</td>
+                <td className="p-3 border-b">{user.role}</td>
+                <td className="p-3 border-b">{user.email}</td>
+                <td
+                  className="p-3 border-b cursor-pointer flex items-center gap-2 pb-7"
+                  onClick={() =>
+                    handleEmployeeVerifyToggle(
+                      user._id,
+                      user.username,
+                      user.employee_verify
+                    )
+                  }
+                >
+                  {user.employee_verify ? (
+                    <>
+                      <FaCheckCircle className="text-green-500 text-lg" />
+                      <span className="text-green-500">Verified</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaTimesCircle className="text-red-500 text-lg" />
+                      <span className="text-red-500">Not Verified</span>
+                    </>
+                  )}
+                </td>
+                <td className="p-3 border-b">
+                  {user.email_verify ? "✅ Verified" : "❌ Not Verified"}
+                </td>
+                <td className="p-3 border-b">{user.otp || "N/A"}</td>
+                <td className="p-3 border-b">
+                  <input
+                    type="checkbox"
+                    checked={user.isAdmin}
+                    className="cursor-pointer"
+                  />
+                </td>
+                <td className="p-3 border-b">
+                  {new Date(user.createdAt).toLocaleString()}
+                </td>
+                <td className="p-3 border-b">
+                  {new Date(user.updatedAt).toLocaleString()}
+                </td>
+                <td className="p-3 border-b">
+                  <button
+                    className="p-2 bg-red-600 rounded hover:bg-red-500"
+                    onClick={() => handleDelete(user._id, user.username)}
                   >
-                    {user.employee_verify ? (
-                      <>
-                        <FaCheckCircle className="text-green-500 text-lg" />
-                        <span className="text-green-500">Verified</span>
-                      </>
-                    ) : (
-                      <>
-                        <FaTimesCircle className="text-red-500 text-lg" />
-                        <span className="text-red-500">Not Verified</span>
-                      </>
-                    )}
-                  </td>
-                  <td className="p-3 border-b">
-                    {user.email_verify ? "✅ Verified" : "❌ Not Verified"}
-                  </td>
-                  <td className="p-3 border-b">{user.otp || "N/A"}</td>
-                  <td className="p-3 border-b">
-                    <input
-                      type="checkbox"
-                      checked={user.isAdmin}
-                      className="cursor-pointer"
-                    />
-                  </td>
-                  <td className="p-3 border-b">
-                    {new Date(user.createdAt).toLocaleString()}
-                  </td>
-                  <td className="p-3 border-b">
-                    {new Date(user.updatedAt).toLocaleString()}
-                  </td>
-                  <td className="p-3 border-b flex gap-2">
-                    <button
-                      className="p-2 bg-red-600 rounded hover:bg-red-500"
-                      onClick={() => handleDelete(user._id, user.username)}
-                    >
-                      <FaTrash className="text-white" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    <FaTrash className="text-white" />
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
     </div>
   );
 };
-
 export default UserManagement;
