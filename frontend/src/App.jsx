@@ -11,12 +11,13 @@ import UserManagement from "./Pages/UserManagement";
 import Profile from "./Pages/Profile";
 import ForgotPassword from "./Components/ForgotPassword";
 import OTP from "./Components/OTP";
+import DailySales from "./Pages/DailySales";
 
 function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <div className="pb-7 pt-5">
+      <div className="pb-7 pt-5 bg-black">
         {" "}
         {/* Adds padding to avoid navbar overlap */}
         <Routes>
@@ -24,6 +25,7 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/daily-sales" element={<DailySales />} />
           </Route>
           {/*Admin Routes */}
           <Route element={<PrivateAdminRoute />}>
