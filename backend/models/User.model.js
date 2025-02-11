@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       minlength: 6,
       required: true,
+      unique: true,
     },
     email_verify: {
       type: Boolean,
