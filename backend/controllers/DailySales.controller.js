@@ -76,3 +76,56 @@ export const getTodaySales = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+// Update or create daily sales data
+export const updateDailySales = async (req, res) => {
+  try {
+    const { userId, totalSales, totalExpense, totalProfit, customers } =
+      req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    // Get today's date without the time component
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let salesEntry = await DailySales.findOne({
+      userId,
+      createdAt: { $gte: today },
+    });
+
+    if (salesEntry) {
+      // Update existing sales entry
+      salesEntry.totalSales = totalSales;
+      salesEntry.totalExpense = totalExpense;
+      salesEntry.totalProfit = totalProfit;
+      salesEntry.customers = customers;
+
+      await salesEntry.save();
+      return res.status(200).json({
+        message: "Sales data updated successfully",
+        sales: salesEntry,
+      });
+    } else {
+      // Create a new sales entry
+      const newSales = new Sales({
+        userId,
+        totalSales,
+        totalExpense,
+        totalProfit,
+        customers,
+      });
+
+      await newSales.save();
+      return res.status(201).json({
+        message: "Sales data created successfully",
+        sales: newSales,
+      });
+    }
+  } catch (error) {
+    console.error("Error updating daily sales:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

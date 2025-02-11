@@ -72,16 +72,26 @@ const DailySalesForm = () => {
       customers: prevData.customers.filter((_, i) => i !== index),
     }));
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      await axios.post("/api/sales/daily-sales", formData, {
-        withCredentials: true,
-      });
-      Swal.fire("Success!", "Sales data submitted successfully!", "success");
-      setExistingSales(formData);
+      if (existingSales) {
+        // Update existing sales data
+        await axios.put("/api/sales/daily-sales", formData, {
+          withCredentials: true,
+        });
+        Swal.fire("Success!", "Sales data updated successfully!", "success");
+      } else {
+        // Create new sales entry
+        await axios.post("/api/sales/daily-sales", formData, {
+          withCredentials: true,
+        });
+        Swal.fire("Success!", "Sales data submitted successfully!", "success");
+      }
+
+      setExistingSales(formData); // Update state after submitting
     } catch (error) {
       Swal.fire("Error!", "Failed to submit sales data.", "error", error);
     } finally {
