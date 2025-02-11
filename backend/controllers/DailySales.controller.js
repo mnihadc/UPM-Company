@@ -1,5 +1,6 @@
 import DailySales from "../models/DailySales.model.js";
 import User from "../models/User.model.js";
+import moment from "moment";
 
 export const createDailySales = async (req, res) => {
   try {
@@ -47,6 +48,31 @@ export const createDailySales = async (req, res) => {
       .json({ message: "Daily sales recorded successfully", newSalesEntry });
   } catch (error) {
     console.error("Error creating daily sales:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get today's sales for a user
+export const getTodaySales = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const today = moment().startOf("day"); // Get today's date (00:00:00)
+
+    const todaySales = await DailySales.findOne({
+      userId,
+      createdAt: {
+        $gte: today.toDate(),
+        $lt: moment(today).endOf("day").toDate(),
+      },
+    });
+
+    if (!todaySales) {
+      return res.status(404).json({ message: "No sales found for today" });
+    }
+
+    res.json(todaySales);
+  } catch (error) {
+    console.error("Error fetching today's sales:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -4,12 +4,10 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 const DailySalesForm = () => {
-  // Get user data from Redux
   const { currentUser } = useSelector((state) => state.user);
   const username = currentUser?.user?.username;
   const userId = currentUser?.user?.id;
 
-  // State for form data
   const [formData, setFormData] = useState({
     userId,
     totalSales: "",
@@ -18,6 +16,7 @@ const DailySalesForm = () => {
     customers: [{ name: "", sales: "", profit: "", credit: "" }],
   });
 
+  const [existingSales, setExistingSales] = useState(null);
   const [dateTime, setDateTime] = useState(new Date());
   const [loading, setLoading] = useState(false);
 
@@ -25,6 +24,22 @@ const DailySalesForm = () => {
     const timer = setInterval(() => setDateTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    const fetchTodaySales = async () => {
+      try {
+        const response = await axios.get(`/api/sales/today-sales/${userId}`, {
+          withCredentials: true,
+        });
+        setExistingSales(response.data);
+        setFormData(response.data);
+      } catch (error) {
+        console.error("No sales found for today.", error);
+      }
+    };
+
+    fetchTodaySales();
+  }, [userId]);
 
   const handleChange = (e, index = null, field = null) => {
     if (index !== null && field) {
@@ -66,28 +81,17 @@ const DailySalesForm = () => {
         withCredentials: true,
       });
       Swal.fire("Success!", "Sales data submitted successfully!", "success");
-      setFormData({
-        userId,
-        totalSales: "",
-        totalExpense: "",
-        totalProfit: "",
-        customers: [{ name: "", sales: "", profit: "", credit: "" }],
-      });
+      setExistingSales(formData);
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        Swal.fire("Notice!", error.response.data.message, "warning");
-      } else {
-        console.error("Error submitting sales data:", error);
-        Swal.fire("Error!", "Failed to submit sales data.", "error");
-      }
+      Swal.fire("Error!", "Failed to submit sales data.", "error", error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="h-screen bg-black text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl p-6 bg-gray-900 shadow-lg rounded-lg">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center p-4 pt-[90px] pb-[30px]">
+      <div className="w-full max-w-4xl p-6 bg-gray-900 shadow-lg rounded-lg overflow-auto">
         <div className="text-center mb-4">
           <h2 className="text-lg font-bold">
             Logged in as: <span className="text-blue-400">{username}</span>
@@ -96,6 +100,15 @@ const DailySalesForm = () => {
             {dateTime.toLocaleDateString()} {dateTime.toLocaleTimeString()}
           </p>
         </div>
+
+        {existingSales && (
+          <div className="mb-6 p-4 bg-gray-800 rounded-md">
+            <h3 className="text-lg font-bold">Today Sales Summary</h3>
+            <p>Total Sales: {existingSales.totalSales} OMR</p>
+            <p>Total Expense: {existingSales.totalExpense} OMR</p>
+            <p>Total Profit: {existingSales.totalProfit} OMR</p>
+          </div>
+        )}
 
         <h1 className="text-2xl font-bold text-center mb-6">
           Daily Sales Entry
@@ -159,7 +172,7 @@ const DailySalesForm = () => {
           <button
             type="button"
             onClick={addCustomer}
-            className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md w-full sm:w-auto"
+            className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
           >
             + Add Customer
           </button>
@@ -169,7 +182,11 @@ const DailySalesForm = () => {
             disabled={loading}
             className="w-full bg-green-600 hover:bg-green-700 text-white p-3 rounded-md mt-4"
           >
-            {loading ? "Submitting..." : "Submit Sales Data"}
+            {loading
+              ? "Submitting..."
+              : existingSales
+              ? "Update Sales Data"
+              : "Submit Sales Data"}
           </button>
         </form>
       </div>
