@@ -74,8 +74,12 @@ const DailySalesForm = () => {
         customers: [{ name: "", sales: "", profit: "", credit: "" }],
       });
     } catch (error) {
-      console.error("Error submitting sales data:", error);
-      Swal.fire("Error!", "Failed to submit sales data.", "error");
+      if (error.response && error.response.status === 400) {
+        Swal.fire("Notice!", error.response.data.message, "warning");
+      } else {
+        console.error("Error submitting sales data:", error);
+        Swal.fire("Error!", "Failed to submit sales data.", "error");
+      }
     } finally {
       setLoading(false);
     }

@@ -12,6 +12,25 @@ export const createDailySales = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Get today's date (YYYY-MM-DD) for comparison
+    const today = new Date().toISOString().split("T")[0];
+
+    // Check if user has already submitted sales today
+    const existingSales = await DailySales.findOne({
+      userId,
+      createdAt: {
+        $gte: new Date(`${today}T00:00:00.000Z`),
+        $lt: new Date(`${today}T23:59:59.999Z`),
+      },
+    });
+
+    if (existingSales) {
+      return res.status(400).json({
+        message:
+          "You have already submitted today's sales report. Please submit again tomorrow.",
+      });
+    }
+
     // Create new DailySales entry
     const newSalesEntry = new DailySales({
       userId,
