@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User"; // Assuming User model exists
+import User from "../models/User.model.js"; // Assuming User model exists
 
 // Middleware to verify user authentication and check verification status
 const verifyUser = async (req, res, next) => {

@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 
 import authRoutes from "./routes/auth.route.js";
 import adminUserManagement from "./routes/AdminUserManagement.route.js";
+import salesManagement from "./routes/DailySales.route.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ const port = process.env.PORT;
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin-usermangement", adminUserManagement);
+app.use("/api/sales", salesManagement);
 
 // Connect to MongoDB
 mongoose
