@@ -161,3 +161,37 @@ export const dailySales = async (req, res) => {
       .json({ message: "Internal Server Error", error: error.message });
   }
 };
+
+export const getDailySalesChart = async (req, res) => {
+  try {
+    const token = req.cookies.authToken;
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    // Get the date 7 days ago
+    const sevenDaysAgo = moment().subtract(7, "days").startOf("day").toDate();
+
+    const salesData = await DailySales.find({
+      userId: userId,
+      createdAt: { $gte: sevenDaysAgo }, // ✅ Last 7 days only
+    })
+      .sort({ createdAt: 1 }) // ✅ Sort by date ascending
+      .select("createdAt totalSales"); // ✅ Only fetch date & totalSales
+
+    // Format data for frontend
+    const formattedData = salesData.map((item) => ({
+      date: moment(item.createdAt).format("YYYY-MM-DD"),
+      totalSales: item.totalSales,
+    }));
+
+    res.json(formattedData);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error });
+  }
+};

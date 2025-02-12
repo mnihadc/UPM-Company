@@ -13,6 +13,7 @@ import ForgotPassword from "./Components/ForgotPassword";
 import OTP from "./Components/OTP";
 import DailySales from "./Pages/DailySales";
 import GetDailySales from "./Pages/GetDailySales";
+import DailySalesChart from "./Pages/DailySalesChart";
 
 function App() {
   return (
@@ -28,7 +29,12 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/daily-sales" element={<DailySales />} />
             <Route path="/get-daily-sales" element={<GetDailySales />} />
+            <Route
+              path="/get-daily-sales-chart"
+              element={<DailySalesChart />}
+            />
           </Route>
+
           {/*Admin Routes */}
           <Route element={<PrivateAdminRoute />}>
             <Route path="/usermangement" element={<UserManagement />} />
