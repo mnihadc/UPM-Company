@@ -195,3 +195,27 @@ export const getDailySalesChart = async (req, res) => {
     res.status(500).json({ message: "Server Error", error });
   }
 };
+
+export const creditUser = async (req, res, next) => {
+  try {
+    const token = req.cookies.authToken;
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const sales = await DailySales.find({ userId }).select("customers");
+    const userCustomers = sales.flatMap((s) => s.customers);
+
+    // Filter only customers with credit > 0
+    const customersWithCredit = userCustomers.filter((c) => c.credit > 0);
+
+    res.json(customersWithCredit);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error });
+  }
+};
