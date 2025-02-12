@@ -5,6 +5,7 @@ import {
   dailySales,
   getDailySalesChart,
   getTodaySales,
+  updateCredit,
   updateDailySales,
 } from "../controllers/DailySales.controller.js";
 
@@ -16,5 +17,6 @@ router.put("/daily-sales", updateDailySales);
 router.get("/get-daily-sales", dailySales);
 router.get("/daily-sales-chart", getDailySalesChart);
 router.get("/users-credits", creditUser);
+router.put("/update-credit/:id", updateCredit);
 
 export default router;

@@ -226,3 +226,55 @@ export const creditUser = async (req, res, next) => {
     res.status(500).json({ message: "Server Error", error });
   }
 };
+
+export const updateCredit = async (req, res) => {
+  try {
+    const token = req.cookies.authToken;
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+    const { id } = req.params; // Customer ID
+    const { credit } = req.body; // New credit value
+
+    if (credit === undefined || isNaN(credit)) {
+      return res
+        .status(400)
+        .json({ message: "Valid credit amount is required" });
+    }
+
+    // Find the daily sales record containing the customer
+    const dailySales = await DailySales.findOne({
+      "customers._id": id,
+      userId,
+    });
+
+    if (!dailySales) {
+      return res
+        .status(404)
+        .json({ message: "Customer not found or unauthorized" });
+    }
+
+    // Update the customer's credit
+    const customer = dailySales.customers.find((c) => c._id.toString() === id);
+    if (!customer) {
+      return res.status(404).json({ message: "Customer not found" });
+    }
+
+    customer.credit = credit; // Update credit value
+
+    await dailySales.save(); // Save updated document
+
+    res.status(200).json({
+      message: "Credit updated successfully",
+      updatedCustomer: customer,
+    });
+  } catch (error) {
+    console.error("Error updating credit:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
