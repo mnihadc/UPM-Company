@@ -208,11 +208,18 @@ export const creditUser = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    const sales = await DailySales.find({ userId }).select("customers");
-    const userCustomers = sales.flatMap((s) => s.customers);
+    const sales = await DailySales.find({ userId }).select(
+      "customers createdAt"
+    );
+    const userCustomers = sales.flatMap((s) =>
+      s.customers.map((c) => ({ ...c.toObject(), createdAt: s.createdAt }))
+    );
 
-    // Filter only customers with credit > 0
     const customersWithCredit = userCustomers.filter((c) => c.credit > 0);
+
+    customersWithCredit.sort(
+      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+    );
 
     res.json(customersWithCredit);
   } catch (error) {

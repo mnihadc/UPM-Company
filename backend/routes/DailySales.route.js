@@ -15,6 +15,6 @@ router.post("/daily-sales", createDailySales);
 router.put("/daily-sales", updateDailySales);
 router.get("/get-daily-sales", dailySales);
 router.get("/daily-sales-chart", getDailySalesChart);
-router.get("/your-credits", creditUser);
+router.get("/users-credits", creditUser);
 
 export default router;

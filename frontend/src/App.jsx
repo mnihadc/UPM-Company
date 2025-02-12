@@ -14,6 +14,7 @@ import OTP from "./Components/OTP";
 import DailySales from "./Pages/DailySales";
 import GetDailySales from "./Pages/GetDailySales";
 import DailySalesChart from "./Pages/DailySalesChart";
+import CreditUsers from "./Pages/CreditUsers";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
               path="/get-daily-sales-chart"
               element={<DailySalesChart />}
             />
+            <Route path="/users-credit" element={<CreditUsers />} />
           </Route>
 
           {/*Admin Routes */}
