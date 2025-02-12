@@ -31,8 +31,20 @@ const DailySalesForm = () => {
         const response = await axios.get(`/api/sales/today-sales/${userId}`, {
           withCredentials: true,
         });
-        setExistingSales(response.data);
-        setFormData(response.data);
+
+        if (response.data) {
+          setExistingSales(response.data);
+          setFormData({
+            _id: response.data._id, // Store the ID for updates
+            userId,
+            totalSales: response.data.totalSales || "",
+            totalExpense: response.data.totalExpense || "",
+            totalProfit: response.data.totalProfit || "",
+            customers: response.data.customers || [
+              { name: "", sales: "", profit: "", credit: "" },
+            ],
+          });
+        }
       } catch (error) {
         console.error("No sales found for today.", error);
       }
@@ -78,7 +90,7 @@ const DailySalesForm = () => {
 
     try {
       if (existingSales) {
-        // Update existing sales data
+        // Ensure _id is included in the update request
         await axios.put("/api/sales/daily-sales", formData, {
           withCredentials: true,
         });
@@ -98,7 +110,6 @@ const DailySalesForm = () => {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center p-4 pt-[90px] pb-[30px]">
       <div className="w-full max-w-4xl p-6 bg-gray-900 shadow-lg rounded-lg overflow-auto">

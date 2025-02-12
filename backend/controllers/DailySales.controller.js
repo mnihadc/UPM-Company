@@ -81,24 +81,28 @@ export const getTodaySales = async (req, res) => {
 // Update or create daily sales data
 export const updateDailySales = async (req, res) => {
   try {
-    const { userId, totalSales, totalExpense, totalProfit, customers } =
+    const { _id, userId, totalSales, totalExpense, totalProfit, customers } =
       req.body;
 
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    // Get today's date without the time component
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    let salesEntry = await DailySales.findOne({
-      userId,
-      createdAt: { $gte: today },
-    });
+    let salesEntry;
+
+    if (_id) {
+      salesEntry = await DailySales.findById(_id);
+    } else {
+      salesEntry = await DailySales.findOne({
+        userId,
+        createdAt: { $gte: today },
+      });
+    }
 
     if (salesEntry) {
-      // Update existing sales entry
       salesEntry.totalSales = totalSales;
       salesEntry.totalExpense = totalExpense;
       salesEntry.totalProfit = totalProfit;
@@ -110,8 +114,7 @@ export const updateDailySales = async (req, res) => {
         sales: salesEntry,
       });
     } else {
-      // Create a new sales entry
-      const newSales = new Sales({
+      const newSales = new DailySales({
         userId,
         totalSales,
         totalExpense,
