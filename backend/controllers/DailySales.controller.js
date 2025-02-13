@@ -297,3 +297,39 @@ export const updateCredit = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+export const getLeaderboard = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+
+    let filter = {};
+    if (month && year) {
+      filter.createdAt = {
+        $gte: new Date(`${year}-${month}-01`),
+        $lt: new Date(`${year}-${Number(month) + 1}-01`),
+      };
+    }
+
+    const salesData = await DailySales.aggregate([
+      { $match: filter },
+      { $group: { _id: "$userId", totalSales: { $sum: "$totalSales" } } },
+      { $sort: { totalSales: -1 } },
+    ]);
+
+    const users = await Promise.all(
+      salesData.map(async (sale) => {
+        const user = await User.findById(sale._id).select(
+          "username profilePic"
+        );
+        return { ...user._doc, totalSales: sale.totalSales };
+      })
+    );
+
+    res.json({
+      users,
+      leader: users.length ? users[0] : null,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+};

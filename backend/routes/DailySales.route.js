@@ -4,6 +4,7 @@ import {
   creditUser,
   dailySales,
   getDailySalesChart,
+  getLeaderboard,
   getTodaySales,
   updateCredit,
   updateDailySales,
@@ -18,5 +19,6 @@ router.get("/get-daily-sales", dailySales);
 router.get("/daily-sales-chart", getDailySalesChart);
 router.get("/users-credits", creditUser);
 router.put("/update-credit/:id", updateCredit);
+router.get("/leaderboard", getLeaderboard);
 
 export default router;
