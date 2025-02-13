@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const CreditUsers = () => {
   const [credits, setCredits] = useState([]);
@@ -11,7 +12,7 @@ const CreditUsers = () => {
   const [newCredit, setNewCredit] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
+  const [loading, setLoading] = useState(false); // Loading state
   useEffect(() => {
     const fetchCredits = async () => {
       try {
@@ -55,24 +56,62 @@ const CreditUsers = () => {
     setFilteredCredits(filtered);
   }, [search, credits, startDate, endDate]);
 
-  const handleEdit = (id, credit) => {
-    setEditing(id);
+  const handleEdit = (creditId, credit, orderId) => {
+    setEditing({ creditId, orderId }); // Store both IDs
     setNewCredit(credit);
   };
 
-  const handleSave = async (id) => {
+  const handleSave = async () => {
+    if (!newCredit || isNaN(newCredit)) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid Input",
+        text: "Please enter a valid credit amount.",
+      });
+      return;
+    }
+
     try {
+      setLoading(true);
+      const { creditId, orderId } = editing; // Extract both IDs
+
       await axios.put(
-        `/api/credits/${id}`,
-        { credit: newCredit },
+        `/api/sales/update-credit/${creditId}`,
+        { credit: Number(newCredit), orderId },
         { withCredentials: true }
       );
-      setCredits(
-        credits.map((c) => (c._id === id ? { ...c, credit: newCredit } : c))
+
+      setCredits((prevCredits) =>
+        prevCredits.map((c) =>
+          c._id === creditId ? { ...c, credit: Number(newCredit) } : c
+        )
       );
+
       setEditing(null);
+      setNewCredit("");
+
+      // ✅ Success Alert
+      Swal.fire({
+        icon: "success",
+        title: "Credit Updated",
+        text: "The credit amount has been successfully updated.",
+      });
     } catch (error) {
       console.error("Error updating credit:", error);
+
+      // ❌ Extracts backend error message if available
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to update credit. Please try again.";
+
+      // ❌ Error Alert
+      Swal.fire({
+        icon: "error",
+        title: "Update Failed",
+        text: errorMessage,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,7 +178,7 @@ const CreditUsers = () => {
                     <td className="p-3">{c.name}</td>
                     <td className="p-3">{c.sales.toLocaleString()} OMR</td>
                     <td className="p-3">
-                      {editing === c._id ? (
+                      {editing?.creditId === c._id ? ( // ✅ Fix: Check `editing.creditId`
                         <input
                           type="number"
                           value={newCredit}
@@ -150,17 +189,28 @@ const CreditUsers = () => {
                         `${c.credit.toLocaleString()} OMR`
                       )}
                     </td>
-                    <td className="p-3">
-                      {editing === c._id ? (
-                        <button
-                          onClick={() => handleSave(c._id)}
-                          className="bg-green-600 p-2 rounded-md"
-                        >
-                          Save
-                        </button>
+                    <td className="p-3 flex space-x-2">
+                      {editing?.creditId === c._id ? ( // ✅ Check if the row is being edited
+                        <>
+                          <button
+                            onClick={handleSave}
+                            className={`p-2 rounded-md ${
+                              loading ? "bg-gray-500" : "bg-green-600"
+                            }`}
+                            disabled={loading}
+                          >
+                            {loading ? "Saving..." : "Save"}
+                          </button>
+                          <button
+                            onClick={() => setEditing(null)} // ❌ Cancel editing
+                            className="p-2 bg-red-600 rounded-md"
+                          >
+                            Cancel
+                          </button>
+                        </>
                       ) : (
                         <button
-                          onClick={() => handleEdit(c._id, c.credit)}
+                          onClick={() => handleEdit(c._id, c.credit, c.orderId)}
                           className="bg-yellow-600 p-2 rounded-md"
                         >
                           Edit

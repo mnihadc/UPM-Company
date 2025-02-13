@@ -2,6 +2,7 @@ import DailySales from "../models/DailySales.model.js";
 import User from "../models/User.model.js";
 import jwt from "jsonwebtoken";
 import moment from "moment";
+import mongoose from "mongoose";
 
 export const createDailySales = async (req, res) => {
   try {
@@ -212,7 +213,11 @@ export const creditUser = async (req, res, next) => {
       "customers createdAt"
     );
     const userCustomers = sales.flatMap((s) =>
-      s.customers.map((c) => ({ ...c.toObject(), createdAt: s.createdAt }))
+      s.customers.map((c) => ({
+        ...c.toObject(),
+        createdAt: s.createdAt,
+        orderId: s._id,
+      }))
     );
 
     const customersWithCredit = userCustomers.filter((c) => c.credit > 0);
@@ -229,52 +234,53 @@ export const creditUser = async (req, res, next) => {
 
 export const updateCredit = async (req, res) => {
   try {
-    const token = req.cookies.authToken;
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No token provided" });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
     const { id } = req.params; // Customer ID
-    const { credit } = req.body; // New credit value
+    const { credit, orderId } = req.body; // Order ID and new credit value
 
-    if (credit === undefined || isNaN(credit)) {
+    if (credit === undefined || credit === null || isNaN(credit)) {
       return res
         .status(400)
-        .json({ message: "Valid credit amount is required" });
+        .json({ message: "Valid credit value is required" });
     }
 
-    // Find the daily sales record containing the customer
-    const dailySales = await DailySales.findOne({
-      "customers._id": id,
-      userId,
-    });
+    // Step 1: Check if the order exists and if the customer is part of that order
+    const dailySales = await DailySales.findOne(
+      { _id: orderId, "customers._id": id },
+      { "customers.$": 1 } // Fetch only the relevant customer's data
+    );
 
-    if (!dailySales) {
+    if (!dailySales || !dailySales.customers.length) {
+      return res.status(404).json({ message: "Order or Customer not found" });
+    }
+
+    const existingCredit = dailySales.customers[0].credit;
+
+    // Step 2: Ensure the new credit is not greater than the existing credit
+    if (Number(credit) > existingCredit) {
+      return res.status(400).json({
+        message:
+          "You cannot increase the credit amount. Only reductions are allowed.",
+      });
+    }
+
+    // Step 3: Update the specific customer's credit (only if it's lower)
+    const result = await DailySales.updateOne(
+      { _id: orderId, "customers._id": id },
+      { $set: { "customers.$.credit": Number(credit) } }
+    );
+
+    if (result.matchedCount === 0) {
       return res
         .status(404)
-        .json({ message: "Customer not found or unauthorized" });
+        .json({ message: "Customer not found in this order" });
     }
-
-    // Update the customer's credit
-    const customer = dailySales.customers.find((c) => c._id.toString() === id);
-    if (!customer) {
-      return res.status(404).json({ message: "Customer not found" });
-    }
-
-    customer.credit = credit; // Update credit value
-
-    await dailySales.save(); // Save updated document
 
     res.status(200).json({
       message: "Credit updated successfully",
-      updatedCustomer: customer,
+      result,
     });
   } catch (error) {
     console.error("Error updating credit:", error);
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
