@@ -16,6 +16,7 @@ import DailySalesChart from "./Pages/DailySalesChart";
 import CreditUsers from "./Pages/CreditUsers";
 import NavbarUser from "./Components/NavbarUser";
 import Leaderboard from "./Pages/LeaderBoard";
+import LeaderboardChart from "./Components/LeaderBoardChart";
 function App() {
   return (
     <BrowserRouter>
@@ -35,6 +36,10 @@ function App() {
             />
             <Route path="/users-credit" element={<CreditUsers />} />
             <Route path="/leader-board" element={<Leaderboard />} />
+            <Route
+              path="/chart-view-leaderboard"
+              element={<LeaderboardChart />}
+            />
           </Route>
 
           {/* Admin Routes */}
