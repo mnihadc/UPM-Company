@@ -236,9 +236,6 @@ const Profile = () => {
               >
                 Logout
               </button>
-              <button className="bg-red-600 px-6 py-2 rounded-lg shadow-md hover:bg-red-500">
-                Delete Account
-              </button>
             </div>
           </form>
         </div>
