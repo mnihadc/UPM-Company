@@ -319,7 +319,7 @@ export const getLeaderboard = async (req, res) => {
     const users = await Promise.all(
       salesData.map(async (sale) => {
         const user = await User.findById(sale._id).select(
-          "username profilePic"
+          "username profilePic email"
         );
         return { ...user._doc, totalSales: sale.totalSales };
       })

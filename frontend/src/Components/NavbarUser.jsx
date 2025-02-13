@@ -23,6 +23,9 @@ const NavbarUser = () => {
           <Link to="/" className="hover:text-white transition">
             Home
           </Link>
+          <Link to="/leader-board" className="hover:text-white transition">
+            LeaderBoard
+          </Link>
           <Link to="/daily-sales" className="hover:text-white transition">
             Entry Daily Sales
           </Link>

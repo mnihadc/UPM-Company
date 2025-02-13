@@ -15,6 +15,7 @@ import GetDailySales from "./Pages/GetDailySales";
 import DailySalesChart from "./Pages/DailySalesChart";
 import CreditUsers from "./Pages/CreditUsers";
 import NavbarUser from "./Components/NavbarUser";
+import Leaderboard from "./Pages/LeaderBoard";
 function App() {
   return (
     <BrowserRouter>
@@ -33,6 +34,7 @@ function App() {
               element={<DailySalesChart />}
             />
             <Route path="/users-credit" element={<CreditUsers />} />
+            <Route path="/leader-board" element={<Leaderboard />} />
           </Route>
 
           {/* Admin Routes */}
