@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./Pages/Home";
-import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import SignupForm from "./Pages/SignUp";
 import EmailVerify from "./Components/EmailVerify";
@@ -15,16 +14,15 @@ import DailySales from "./Pages/DailySales";
 import GetDailySales from "./Pages/GetDailySales";
 import DailySalesChart from "./Pages/DailySalesChart";
 import CreditUsers from "./Pages/CreditUsers";
-
+import NavbarUser from "./Components/NavbarUser";
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
+      <NavbarUser />
       <div className="pb-7 pt-5 bg-black">
-        {" "}
-        {/* Adds padding to avoid navbar overlap */}
+        {/* Add NavbarUser conditionally for authenticated users */}
         <Routes>
-          {/*User Routes */}
+          {/* User Routes */}
           <Route element={<PrivateRoute />}>
             <Route path="/" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
@@ -37,11 +35,12 @@ function App() {
             <Route path="/users-credit" element={<CreditUsers />} />
           </Route>
 
-          {/*Admin Routes */}
+          {/* Admin Routes */}
           <Route element={<PrivateAdminRoute />}>
             <Route path="/usermangement" element={<UserManagement />} />
           </Route>
-          {/*Auth Routes */}
+
+          {/* Auth Routes */}
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/login" element={<PandaLogin />} />
           <Route path="/email-verify" element={<EmailVerify />} />

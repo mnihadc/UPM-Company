@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Chart } from "chart.js/auto";
-
+import { useSelector } from "react-redux";
 function Home() {
   const [loading, setLoading] = useState(true);
-
+  const { currentUser } = useSelector((state) => state.user);
+  const username = currentUser.user.username;
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -79,42 +80,11 @@ function Home() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-900 text-white pt-10">
-      <aside className="w-full md:w-64 bg-gray-800 p-5 space-y-6">
-        <h2 className="text-2xl font-bold">Dabang</h2>
-        <nav className="space-y-2">
-          {[
-            "Dashboard",
-            "Leaderboard",
-            "Orders",
-            "Products",
-            "Sales Report",
-            "Messages",
-            "Settings",
-          ].map((item) => (
-            <a
-              key={item}
-              href="#"
-              className="block p-3 rounded-md hover:bg-gray-700"
-            >
-              {item}
-            </a>
-          ))}
-          <a href="#" className="block p-3 rounded-md hover:bg-red-600">
-            Sign Out
-          </a>
-        </nav>
-      </aside>
-
       <main className="flex-1 p-6">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600"
-            />
-            <span className="text-gray-300">YOUSUF (Admin)</span>
+            <span className="text-gray-300">Welcome {username}</span>
           </div>
         </div>
 
