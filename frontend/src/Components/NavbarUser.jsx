@@ -12,7 +12,7 @@ const NavbarUser = () => {
     "https://static.vecteezy.com/system/resources/thumbnails/019/879/186/small_2x/user-icon-on-transparent-background-free-png.png";
 
   return (
-    <nav className="bg-blue-800 text-gray-200 p-4 shadow-md fixed w-full z-50">
+    <nav className="bg-blue-800 text-gray-900 p-4 shadow-md fixed w-full z-50">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-2xl font-semibold text-white">
           UPM Company
@@ -20,25 +20,31 @@ const NavbarUser = () => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex space-x-6">
-          <Link to="/" className="hover:text-white transition">
+          <Link to="/" className="hover:text-white transition font-bold">
             Home
           </Link>
-          <Link to="/leader-board" className="hover:text-white transition">
+          <Link
+            to="/leader-board"
+            className="hover:text-white transition font-bold"
+          >
             LeaderBoard
           </Link>
-          <Link to="/daily-sales" className="hover:text-white transition">
+          <Link
+            to="/daily-sales"
+            className="hover:text-white transition font-bold"
+          >
             Entry Daily Sales
           </Link>
-          <Link to="/get-daily-sales" className="hover:text-white transition">
+          <Link
+            to="/get-daily-sales"
+            className="hover:text-white transition font-bold"
+          >
             Daily Sales
           </Link>
           <Link
-            to="/get-daily-sales-chart"
-            className="hover:text-white transition"
+            to="/users-credit"
+            className="hover:text-white transition font-bold"
           >
-            Daily Sales Chart
-          </Link>
-          <Link to="/users-credit" className="hover:text-white transition">
             Credit
           </Link>
 
@@ -51,7 +57,9 @@ const NavbarUser = () => {
                 alt="profile"
               />
             ) : (
-              <span className="hover:text-white transition">Login</span>
+              <span className="hover:text-white transition font-bold">
+                Login
+              </span>
             )}
           </Link>
         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const GetDailySales = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -72,6 +73,11 @@ const GetDailySales = () => {
             <span className="text-lg font-medium">
               {currentTime.toLocaleString()}
             </span>
+            <Link to="/get-daily-sales-chart">
+              <button className="bg-gradient-to-r from-amber-500 to-amber-700 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 font-semibold">
+                📊 View in Chart
+              </button>
+            </Link>
           </div>
 
           {/* Search & Filter Section */}
