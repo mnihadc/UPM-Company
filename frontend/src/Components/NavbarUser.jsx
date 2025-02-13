@@ -78,35 +78,34 @@ const NavbarUser = () => {
         <div className="md:hidden flex flex-col items-center bg-blue-800 py-2 space-y-3">
           <Link
             to="/"
-            className="hover:text-white transition"
+            className="hover:text-white transition font-bold"
             onClick={() => setIsOpen(false)}
           >
             Home
           </Link>
           <Link
-            to="/entry-daily-sales"
-            className="hover:text-white transition"
+            to="/leader-board"
+            className="hover:text-white transition font-bold"
+          >
+            LeaderBoard
+          </Link>
+          <Link
+            to="/daily-sales"
+            className="hover:text-white transition font-bold"
             onClick={() => setIsOpen(false)}
           >
             Entry Daily Sales
           </Link>
           <Link
-            to="/daily-sales"
-            className="hover:text-white transition"
+            to="/get-daily-sales"
+            className="hover:text-white transition font-bold"
             onClick={() => setIsOpen(false)}
           >
             Daily Sales
           </Link>
           <Link
-            to="/daily-sales-chart"
-            className="hover:text-white transition"
-            onClick={() => setIsOpen(false)}
-          >
-            Daily Sales Chart
-          </Link>
-          <Link
-            to="/credit"
-            className="hover:text-white transition"
+            to="/users-credit"
+            className="hover:text-white transition font-bold"
             onClick={() => setIsOpen(false)}
           >
             Credit
@@ -125,7 +124,7 @@ const NavbarUser = () => {
                 alt="profile"
               />
             ) : (
-              <span className="text-white hover:underline transition">
+              <span className="text-white hover:underline transition font-bold">
                 Login
               </span>
             )}
