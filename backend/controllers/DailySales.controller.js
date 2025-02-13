@@ -166,26 +166,39 @@ export const dailySales = async (req, res) => {
 export const getDailySalesChart = async (req, res) => {
   try {
     const token = req.cookies.authToken;
-    if (!token) {
+    if (!token)
       return res
         .status(401)
         .json({ message: "Unauthorized: No token provided" });
-    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    // Get the date 7 days ago
-    const sevenDaysAgo = moment().subtract(7, "days").startOf("day").toDate();
+    let { startDate, endDate, month } = req.query;
+    let filter = { userId };
 
-    const salesData = await DailySales.find({
-      userId: userId,
-      createdAt: { $gte: sevenDaysAgo }, // ✅ Last 7 days only
-    })
-      .sort({ createdAt: 1 }) // ✅ Sort by date ascending
-      .select("createdAt totalSales"); // ✅ Only fetch date & totalSales
+    if (startDate && endDate) {
+      // If startDate and endDate exist, filter by date range
+      filter.createdAt = {
+        $gte: moment(startDate, "YYYY-MM-DD").startOf("day").toDate(),
+        $lte: moment(endDate, "YYYY-MM-DD").endOf("day").toDate(),
+      };
+    } else if (month) {
+      // If no date range is given, but month is selected
+      const startOfMonth = moment(month, "YYYY-MM").startOf("month").toDate();
+      const endOfMonth = moment(month, "YYYY-MM").endOf("month").toDate();
+      filter.createdAt = { $gte: startOfMonth, $lte: endOfMonth };
+    } else {
+      // Default: Last 7 days if nothing is selected
+      filter.createdAt = {
+        $gte: moment().subtract(7, "days").startOf("day").toDate(),
+      };
+    }
 
-    // Format data for frontend
+    const salesData = await DailySales.find(filter)
+      .sort({ createdAt: 1 })
+      .select("createdAt totalSales");
+
     const formattedData = salesData.map((item) => ({
       date: moment(item.createdAt).format("YYYY-MM-DD"),
       totalSales: item.totalSales,
