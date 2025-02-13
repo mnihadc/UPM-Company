@@ -1,36 +1,79 @@
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Swal from "sweetalert2";
-import { useDispatch } from "react-redux";
 import {
   signoutUserStart,
   signoutUserSuccess,
   signoutUserFailure,
 } from "../Redux/user/userSlice";
+
 const Profile = () => {
+  const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
-  const user = {
-    username: "John Doe",
-    email: "johndoe@example.com",
-    role: "Professional Buyer",
-    userId: "123456",
-    address: {
-      fullName: "John Doe",
-      email: "johndoe@example.com",
-      gender: "Male",
-      dob: "1990-05-15",
-      phone: "+1 234 567 890",
-      address: "1234 Elm Street",
-      city: "New York",
-      district: "Manhattan",
-      state: "NY",
-      postalCode: "10001",
-    },
-    membershipLevel: {
-      newBuyer: 80,
-      engagedShopper: 60,
-      premiumMember: 40,
-      superPremiumMember: 20,
-    },
+  const [userData, setUserData] = useState({
+    username: "",
+    email: "",
+    mobile: "",
+    gender: "",
+    age: "",
+    createdAt: "",
+  });
+  const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/profile", {
+      method: "GET",
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => setUserData(data))
+      .catch((error) => console.error("Error fetching profile:", error));
+  }, []);
+
+  const handleChange = (e) => {
+    setUserData({ ...userData, [e.target.name]: e.target.value });
   };
+
+  const handleSave = async (e) => {
+    e.preventDefault(); // Prevents page refresh
+
+    const confirmUpdate = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to save the changes?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, update!",
+    });
+
+    if (confirmUpdate.isConfirmed) {
+      try {
+        const response = await fetch("/api/auth/update-profile", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(userData),
+        });
+
+        if (response.ok) {
+          const updatedData = await response.json();
+          setUserData(updatedData); // Update local state with new data
+          await Swal.fire(
+            "Success",
+            "Profile updated successfully!",
+            "success"
+          );
+          setEditMode(false);
+        } else {
+          Swal.fire("Error", "Failed to update profile", "error");
+        }
+      } catch (error) {
+        Swal.fire("Error", "Something went wrong", "error", error);
+      }
+    }
+  };
+
   const handleLogout = async () => {
     const confirmLogout = await Swal.fire({
       title: "Are you sure?",
@@ -44,7 +87,7 @@ const Profile = () => {
 
     if (confirmLogout.isConfirmed) {
       try {
-        dispatch(signoutUserStart()); // Set loading state
+        dispatch(signoutUserStart());
 
         const response = await fetch("/api/auth/logout", {
           method: "POST",
@@ -52,14 +95,14 @@ const Profile = () => {
         });
 
         if (response.ok) {
-          dispatch(signoutUserSuccess()); // Clear user state
-          localStorage.removeItem("token"); // Remove token
+          dispatch(signoutUserSuccess());
+          localStorage.removeItem("token");
           await Swal.fire(
             "Logged Out!",
             "You have been logged out.",
             "success"
           );
-          window.location.href = "/login"; // Redirect to login
+          window.location.href = "/login";
         } else {
           dispatch(signoutUserFailure("Logout failed! Please try again."));
           Swal.fire("Error", "Logout failed! Please try again.", "error");
@@ -72,81 +115,132 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6 flex justify-center pt-10">
-      <div className="w-full max-w-4xl">
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="bg-gray-800 p-6 rounded-lg flex flex-col items-center w-full md:w-1/3">
-            <img
-              src="https://bootdey.com/img/Content/avatar/avatar7.png"
-              alt="User"
-              className="rounded-full w-32 mb-4"
-            />
-            <h4 className="text-xl font-semibold">{user.username}</h4>
-            <p className="text-gray-400">{user.email}</p>
-            <p className="text-sm text-gray-500">{user.role}</p>
-          </div>
+    <div className="min-h-screen bg-gray-900 text-white p-8 flex justify-center items-center pt-13">
+      <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Profile Card */}
+        <div className="bg-gray-800 p-8 rounded-lg flex flex-col items-center shadow-lg">
+          <img
+            src={
+              currentUser.avatar ||
+              "https://bootdey.com/img/Content/avatar/avatar7.png"
+            }
+            alt="User"
+            className="rounded-full w-32 h-32 mb-4 border-4 border-gray-600"
+          />
+          <h4 className="text-2xl font-semibold">{userData.username}</h4>
+          <p className="text-gray-400">{userData.email}</p>
+        </div>
 
-          <div className="bg-gray-800 p-6 rounded-lg w-full md:w-2/3">
-            <h3 className="text-lg font-semibold mb-4">Profile Information</h3>
-            <form>
-              <div className="mb-4">
+        {/* Edit Profile Form */}
+        <div className="md:col-span-2 bg-gray-800 p-8 rounded-lg shadow-lg">
+          <h3 className="text-2xl font-semibold mb-6 border-b border-gray-700 pb-2">
+            Profile Information
+          </h3>
+          <form onSubmit={handleSave}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
                 <label className="block text-sm font-medium">Full Name</label>
                 <input
                   type="text"
-                  className="w-full p-2 mt-1 bg-gray-700 rounded border border-gray-600 focus:outline-none"
-                  defaultValue={user.username}
+                  name="username"
+                  className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600"
+                  value={userData.username}
+                  onChange={handleChange}
+                  disabled={!editMode}
                 />
               </div>
-              <div className="mb-4">
+              <div>
                 <label className="block text-sm font-medium">Email</label>
                 <input
                   type="email"
-                  className="w-full p-2 mt-1 bg-gray-700 rounded border border-gray-600 focus:outline-none"
-                  defaultValue={user.email}
+                  name="email"
+                  className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600"
+                  value={userData.email}
+                  onChange={handleChange}
+                  disabled={!editMode}
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium">Password</label>
+              <div>
+                <label className="block text-sm font-medium">Mobile</label>
                 <input
-                  type="password"
-                  className="w-full p-2 mt-1 bg-gray-700 rounded border border-gray-600 focus:outline-none"
-                  defaultValue="********"
+                  type="text"
+                  name="mobile"
+                  className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600"
+                  value={userData.mobile}
+                  onChange={handleChange}
+                  disabled={!editMode}
                 />
               </div>
-              <div className="flex justify-between">
-                <button type="button" className="bg-blue-600 px-4 py-2 rounded">
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  className="bg-amber-500 px-4 py-2 rounded"
-                  onClick={handleLogout}
+              <div>
+                <label className="block text-sm font-medium">Gender</label>
+                <select
+                  name="gender"
+                  className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600"
+                  value={userData.gender}
+                  onChange={handleChange}
+                  disabled={!editMode}
                 >
-                  Logout
-                </button>
-                <button type="button" className="bg-red-600 px-4 py-2 rounded">
-                  Delete Account
-                </button>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
               </div>
-            </form>
-          </div>
-        </div>
-
-        <div className="mt-6 bg-gray-800 p-6 rounded-lg">
-          <h3 className="text-lg font-semibold mb-4">Membership Progress</h3>
-          {Object.entries(user.membershipLevel).map(([level, value]) => (
-            <div key={level} className="mb-3">
-              <small className="block capitalize">
-                {level.replace(/([A-Z])/g, " $1").trim()}
-              </small>
-              <div className="w-full bg-gray-700 rounded-full h-2.5">
-                <div
-                  className="bg-blue-500 h-2.5 rounded-full"
-                  style={{ width: `${value}%` }}
-                ></div>
+              <div>
+                <label className="block text-sm font-medium">Age</label>
+                <input
+                  type="text"
+                  name="age"
+                  className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600"
+                  value={userData.age}
+                  onChange={handleChange}
+                  disabled={!editMode}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium">Created At</label>
+                <input
+                  type="text"
+                  className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600"
+                  value={new Date(userData.createdAt).toLocaleDateString()}
+                  disabled
+                />
               </div>
             </div>
-          ))}
+            <div className="mt-6 flex justify-between gap-2">
+              {!editMode ? (
+                <button
+                  type="button"
+                  className="bg-blue-600 px-6 py-2 rounded-lg shadow-md hover:bg-blue-500"
+                  onClick={() => {
+                    Swal.fire({
+                      title: "Edit Profile",
+                      text: "You can now edit your profile details.",
+                      icon: "info",
+                      confirmButtonText: "OK",
+                    }).then(() => setEditMode(true)); // Only update state after the user clicks OK
+                  }}
+                >
+                  Edit
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="bg-green-600 px-6 py-2 rounded-lg shadow-md hover:bg-green-500"
+                >
+                  Save Changes
+                </button>
+              )}
+              <button
+                type="button"
+                className="bg-amber-500 px-4 py-2 rounded"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+              <button className="bg-red-600 px-6 py-2 rounded-lg shadow-md hover:bg-red-500">
+                Delete Account
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

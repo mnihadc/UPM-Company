@@ -7,9 +7,11 @@ import {
   resendOtp,
   sendOtpToEmail,
   signUp,
+  updateUserProfile,
   verifyEmailOtp,
   verifyOtp,
 } from "../controllers/Auth.controller.js";
+import verifyUser from "../utils/verifyUser.js";
 
 const router = express.Router();
 
@@ -23,5 +25,6 @@ router.post("/logout", logoutUser);
 router.post("/forgotpassword-email", sendOtpToEmail);
 router.post("/verifyOtp", verifyOtp);
 router.get("/profile", getUserProfile);
+router.put("/update-profile", updateUserProfile);
 
 export default router;
