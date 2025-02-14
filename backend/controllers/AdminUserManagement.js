@@ -95,3 +95,46 @@ export const getMonthlyProfit = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const getMonthlySales = async (req, res) => {
+  try {
+    let { month, year } = req.query;
+
+    const now = new Date();
+    month = month ? parseInt(month) : now.getMonth() + 1;
+    year = year ? parseInt(year) : now.getFullYear();
+
+    // Start from the 1st of the selected month
+    const startDate = new Date(year, month - 1, 1);
+    // End date is today if it's the current month, otherwise the last day of the selected month
+    const endDate =
+      month === now.getMonth() + 1 && year === now.getFullYear()
+        ? now
+        : new Date(year, month, 0);
+
+    const salesData = await DailySales.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: { day: { $dayOfMonth: "$createdAt" } },
+          totalSales: { $sum: "$totalSales" },
+        },
+      },
+      { $sort: { "_id.day": 1 } },
+    ]);
+
+    res.json(
+      salesData.map((entry) => ({
+        day: entry._id.day,
+        totalSales: entry.totalSales,
+      }))
+    );
+  } catch (error) {
+    console.error("Error fetching sales data:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
