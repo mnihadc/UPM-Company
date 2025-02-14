@@ -6,6 +6,8 @@ import { useSelector } from "react-redux";
 const NavbarUser = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
+  const user = currentUser.user.isAdmin === false;
+  const admin = currentUser.user.isAdmin === true;
 
   // Default profile image
   const defaultProfilePic =
@@ -23,30 +25,42 @@ const NavbarUser = () => {
           <Link to="/" className="hover:text-white transition font-bold">
             Home
           </Link>
-          <Link
-            to="/leader-board"
-            className="hover:text-white transition font-bold"
-          >
-            LeaderBoard
-          </Link>
-          <Link
-            to="/daily-sales"
-            className="hover:text-white transition font-bold"
-          >
-            Entry Daily Sales
-          </Link>
-          <Link
-            to="/get-daily-sales"
-            className="hover:text-white transition font-bold"
-          >
-            Daily Sales
-          </Link>
-          <Link
-            to="/users-credit"
-            className="hover:text-white transition font-bold"
-          >
-            Credit
-          </Link>
+          {user && (
+            <>
+              <Link
+                to="/leader-board"
+                className="hover:text-white transition font-bold"
+              >
+                LeaderBoard
+              </Link>
+              <Link
+                to="/daily-sales"
+                className="hover:text-white transition font-bold"
+              >
+                Entry Daily Sales
+              </Link>
+              <Link
+                to="/get-daily-sales"
+                className="hover:text-white transition font-bold"
+              >
+                Daily Sales
+              </Link>
+              <Link
+                to="/users-credit"
+                className="hover:text-white transition font-bold"
+              >
+                Credit
+              </Link>
+            </>
+          )}
+          {admin && (
+            <Link
+              to="/admin-dashboard"
+              className="hover:text-white transition font-bold"
+            >
+              Admin Dashboard
+            </Link>
+          )}
 
           {/* Profile Section */}
           <Link to="/profile" className="flex items-center space-x-2">
@@ -83,34 +97,47 @@ const NavbarUser = () => {
           >
             Home
           </Link>
-          <Link
-            to="/leader-board"
-            className="hover:text-white transition font-bold"
-          >
-            LeaderBoard
-          </Link>
-          <Link
-            to="/daily-sales"
-            className="hover:text-white transition font-bold"
-            onClick={() => setIsOpen(false)}
-          >
-            Entry Daily Sales
-          </Link>
-          <Link
-            to="/get-daily-sales"
-            className="hover:text-white transition font-bold"
-            onClick={() => setIsOpen(false)}
-          >
-            Daily Sales
-          </Link>
-          <Link
-            to="/users-credit"
-            className="hover:text-white transition font-bold"
-            onClick={() => setIsOpen(false)}
-          >
-            Credit
-          </Link>
-
+          {user && (
+            <>
+              <Link
+                to="/leader-board"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                LeaderBoard
+              </Link>
+              <Link
+                to="/daily-sales"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Entry Daily Sales
+              </Link>
+              <Link
+                to="/get-daily-sales"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Daily Sales
+              </Link>
+              <Link
+                to="/users-credit"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Credit
+              </Link>
+            </>
+          )}
+          {admin && (
+            <Link
+              to="/admin-dashboard"
+              className="hover:text-white transition font-bold"
+              onClick={() => setIsOpen(false)}
+            >
+              Admin Dashboard
+            </Link>
+          )}
           {/* Profile Section */}
           <Link
             to="/profile"
