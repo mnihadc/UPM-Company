@@ -18,7 +18,7 @@ const NavbarUser = () => {
     <nav className="bg-blue-800 text-gray-900 p-4 shadow-md fixed w-full z-50">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="text-2xl font-semibold text-white">
-          UPM Company
+          {isAdmin ? "UPM Company Admin" : "UPM Company"}
         </Link>
 
         {/* Desktop Links */}

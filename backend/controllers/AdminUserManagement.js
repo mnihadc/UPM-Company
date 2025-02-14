@@ -138,3 +138,53 @@ export const getMonthlySales = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+export const getCreditReport = async (req, res) => {
+  try {
+    let { month, year, type } = req.query;
+
+    const now = new Date();
+    month = month ? parseInt(month) : now.getMonth() + 1;
+    year = year ? parseInt(year) : now.getFullYear();
+
+    let matchStage = {};
+
+    if (type === "monthly") {
+      // Filter for the selected month
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0);
+      matchStage = { createdAt: { $gte: startDate, $lte: endDate } };
+    } else if (type === "yearly") {
+      // Filter for the selected year
+      const startYear = new Date(year, 0, 1);
+      const endYear = new Date(year, 11, 31);
+      matchStage = { createdAt: { $gte: startYear, $lte: endYear } };
+    }
+
+    const creditData = await DailySales.aggregate([
+      { $match: matchStage },
+      { $unwind: "$customers" },
+      {
+        $group: {
+          _id:
+            type === "monthly"
+              ? { day: { $dayOfMonth: "$createdAt" } }
+              : { month: { $month: "$createdAt" } },
+          totalCredit: { $sum: "$customers.credit" },
+        },
+      },
+      { $sort: { "_id.day": 1, "_id.month": 1 } },
+    ]);
+
+    res.json(
+      creditData.map((entry) => ({
+        label: type === "monthly" ? `Day ${entry._id.day}` : `Month ${entry._id.month}`,
+        totalCredit: entry.totalCredit,
+      }))
+    );
+  } catch (error) {
+    console.error("Error fetching credit report:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
