@@ -6,8 +6,9 @@ import { useSelector } from "react-redux";
 const NavbarUser = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
-  const user = currentUser.user.isAdmin === false;
-  const admin = currentUser.user.isAdmin === true;
+
+  const isAdmin = currentUser?.user?.isAdmin === true;
+  const isUser = currentUser?.user?.isAdmin === false;
 
   // Default profile image
   const defaultProfilePic =
@@ -25,7 +26,7 @@ const NavbarUser = () => {
           <Link to="/" className="hover:text-white transition font-bold">
             Home
           </Link>
-          {user && (
+          {isUser && (
             <>
               <Link
                 to="/leader-board"
@@ -53,13 +54,27 @@ const NavbarUser = () => {
               </Link>
             </>
           )}
-          {admin && (
-            <Link
-              to="/admin-dashboard"
-              className="hover:text-white transition font-bold"
-            >
-              Admin Dashboard
-            </Link>
+          {isAdmin && (
+            <>
+              <Link
+                to="/usermangement"
+                className="hover:text-white transition font-bold"
+              >
+                UserManagement
+              </Link>
+              <Link
+                to="/profit-chart"
+                className="hover:text-white transition font-bold"
+              >
+                Profit Chart
+              </Link>
+              <Link
+                to="/sales-chart"
+                className="hover:text-white transition font-bold"
+              >
+                Sales-Chart
+              </Link>
+            </>
           )}
 
           {/* Profile Section */}
@@ -97,7 +112,7 @@ const NavbarUser = () => {
           >
             Home
           </Link>
-          {user && (
+          {isUser && (
             <>
               <Link
                 to="/leader-board"
@@ -129,14 +144,30 @@ const NavbarUser = () => {
               </Link>
             </>
           )}
-          {admin && (
-            <Link
-              to="/admin-dashboard"
-              className="hover:text-white transition font-bold"
-              onClick={() => setIsOpen(false)}
-            >
-              Admin Dashboard
-            </Link>
+          {isAdmin && (
+            <>
+              <Link
+                to="/usermangement"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                UserManagement
+              </Link>
+              <Link
+                to="/profit-chart"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Profit-Chart
+              </Link>
+              <Link
+                to="/sales-chart"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Sales-Chart
+              </Link>
+            </>
           )}
           {/* Profile Section */}
           <Link
