@@ -139,7 +139,6 @@ export const getMonthlySales = async (req, res) => {
   }
 };
 
-
 export const getCreditReport = async (req, res) => {
   try {
     let { month, year, type } = req.query;
@@ -179,12 +178,59 @@ export const getCreditReport = async (req, res) => {
 
     res.json(
       creditData.map((entry) => ({
-        label: type === "monthly" ? `Day ${entry._id.day}` : `Month ${entry._id.month}`,
+        label:
+          type === "monthly"
+            ? `Day ${entry._id.day}`
+            : `Month ${entry._id.month}`,
         totalCredit: entry.totalCredit,
       }))
     );
   } catch (error) {
     console.error("Error fetching credit report:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getTotalExpenseData = async (req, res) => {
+  try {
+    const { month, year, type } = req.query;
+
+    const matchStage = {
+      $expr: {
+        $and: [
+          { $eq: [{ $year: "$createdAt" }, parseInt(year)] },
+          ...(type === "monthly"
+            ? [{ $eq: [{ $month: "$createdAt" }, parseInt(month)] }]
+            : []),
+        ],
+      },
+    };
+
+    const groupStage =
+      type === "yearly"
+        ? {
+            _id: { $month: "$createdAt" },
+            totalExpense: { $sum: "$totalExpense" },
+          }
+        : {
+            _id: { $dayOfMonth: "$createdAt" },
+            totalExpense: { $sum: "$totalExpense" },
+          };
+
+    const expenses = await DailySales.aggregate([
+      { $match: matchStage },
+      { $group: groupStage },
+      { $sort: { _id: 1 } },
+    ]);
+
+    const formattedData = expenses.map((entry) => ({
+      label: entry._id.toString(),
+      totalExpense: entry.totalExpense,
+    }));
+
+    res.json(formattedData);
+  } catch (error) {
+    console.error("Error fetching expense data:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -4,6 +4,7 @@ import {
   getCreditReport,
   getMonthlyProfit,
   getMonthlySales,
+  getTotalExpenseData,
   getUsers,
   updateEmployeeVerify,
 } from "../controllers/AdminUserManagement.js";
@@ -16,5 +17,6 @@ router.delete("/delete-user/:id", deleteUser);
 router.get("/profit-chart", getMonthlyProfit);
 router.get("/admin-sales-data", getMonthlySales);
 router.get("/credit-data", getCreditReport);
+router.get("/expense-data", getTotalExpenseData);
 
 export default router;
