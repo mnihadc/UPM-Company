@@ -17,6 +17,7 @@ import CreditUsers from "./Pages/CreditUsers";
 import NavbarUser from "./Components/NavbarUser";
 import Leaderboard from "./Pages/LeaderBoard";
 import LeaderboardChart from "./Components/LeaderBoardChart";
+import AdminProfitChart from "./Pages/AdminProfit";
 function App() {
   return (
     <BrowserRouter>
@@ -45,6 +46,7 @@ function App() {
           {/* Admin Routes */}
           <Route element={<PrivateAdminRoute />}>
             <Route path="/usermangement" element={<UserManagement />} />
+            <Route path="/profit-chart" element={<AdminProfitChart />} />
           </Route>
 
           {/* Auth Routes */}
