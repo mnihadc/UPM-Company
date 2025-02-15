@@ -102,44 +102,53 @@ export const getMonthlyProfit = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 export const getMonthlySales = async (req, res) => {
   try {
-    let { month, year } = req.query;
-
+    let { month, year, type } = req.query;
     const now = new Date();
     month = month ? parseInt(month) : now.getMonth() + 1;
     year = year ? parseInt(year) : now.getFullYear();
 
-    // Start from the 1st of the selected month
-    const startDate = new Date(year, month - 1, 1);
-    // End date is today if it's the current month, otherwise the last day of the selected month
-    const endDate =
-      month === now.getMonth() + 1 && year === now.getFullYear()
-        ? now
-        : new Date(year, month, 0);
+    let matchStage = { $expr: { $eq: [{ $year: "$createdAt" }, year] } };
+    if (type === "monthly") {
+      matchStage.createdAt = { $gte: new Date(year, month - 1, 1), $lte: now };
+    }
+
+    const groupStage =
+      type === "yearly"
+        ? { _id: { $month: "$createdAt" }, totalSales: { $sum: "$totalSales" } }
+        : {
+            _id: { $dayOfMonth: "$createdAt" },
+            totalSales: { $sum: "$totalSales" },
+          };
 
     const salesData = await DailySales.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate },
-        },
-      },
-      {
-        $group: {
-          _id: { day: { $dayOfMonth: "$createdAt" } },
-          totalSales: { $sum: "$totalSales" },
-        },
-      },
-      { $sort: { "_id.day": 1 } },
+      { $match: matchStage },
+      { $group: groupStage },
+      { $sort: { _id: 1 } },
     ]);
 
-    res.json(
-      salesData.map((entry) => ({
-        day: entry._id.day,
-        totalSales: entry.totalSales,
-      }))
-    );
+    const formattedData = salesData.map((entry) => ({
+      [type === "yearly" ? "month" : "day"]:
+        type === "yearly" ? monthNames[entry._id - 1] : entry._id,
+      totalSales: entry.totalSales,
+    }));
+
+    res.status(200).json(formattedData);
   } catch (error) {
     console.error("Error fetching sales data:", error);
     res.status(500).json({ message: "Internal server error" });
