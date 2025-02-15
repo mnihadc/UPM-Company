@@ -250,3 +250,72 @@ export const getTotalExpenseData = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const adminSalesUserChart = async (req, res) => {
+  try {
+    let { filter, date, month, year } = req.query;
+    const now = new Date();
+
+    let matchStage = {};
+
+    if (filter === "today" || !filter) {
+      // Default: Today’s Sales
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+      matchStage = { createdAt: { $gte: todayStart, $lte: todayEnd } };
+    } else if (filter === "monthly") {
+      // Monthly Sales
+      month = month ? parseInt(month) : now.getMonth() + 1;
+      year = year ? parseInt(year) : now.getFullYear();
+      matchStage = {
+        $expr: {
+          $and: [
+            { $eq: [{ $year: "$createdAt" }, year] },
+            { $eq: [{ $month: "$createdAt" }, month] },
+          ],
+        },
+      };
+    } else if (filter === "date" && date) {
+      // Specific Date Sales
+      const selectedDate = new Date(date);
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      matchStage = { createdAt: { $gte: startOfDay, $lte: endOfDay } };
+    }
+
+    // Aggregate sales per user
+    const salesData = await DailySales.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: "$userId",
+          totalSales: { $sum: "$totalSales" },
+        },
+      },
+      { $sort: { totalSales: -1 } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $project: {
+          username: { $arrayElemAt: ["$user.username", 0] },
+          totalSales: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json(salesData);
+  } catch (error) {
+    console.error("Error fetching user sales data:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
