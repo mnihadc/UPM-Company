@@ -74,6 +74,18 @@ const NavbarUser = () => {
               >
                 Sales-Chart
               </Link>
+              <Link
+                to="/credit-chart"
+                className="hover:text-white transition font-bold"
+              >
+                Credit-Chart
+              </Link>
+              <Link
+                to="/expense-chart"
+                className="hover:text-white transition font-bold"
+              >
+                Expanse-Chart
+              </Link>
             </>
           )}
 

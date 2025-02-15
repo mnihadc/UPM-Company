@@ -6,32 +6,19 @@ const AdminProfitChart = () => {
   const currentDate = new Date();
   const [month, setMonth] = useState(currentDate.getMonth() + 1);
   const [year, setYear] = useState(currentDate.getFullYear());
+  const [type, setType] = useState("monthly"); // Default to monthly
   const [profitData, setProfitData] = useState([]);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const chartRef = useRef(null);
   const canvasRef = useRef(null);
 
   useEffect(() => {
     fetchProfitData();
-  }, [month, year]);
-
-  useEffect(() => {
-    // Listen for screen resize to adjust chart orientation
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (profitData.length > 0) {
-        renderChart(profitData);
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [profitData]);
+  }, [month, year, type]);
 
   const fetchProfitData = async () => {
     try {
       const response = await axios.get(
-        `/api/admin-usermangement/profit-chart?month=${month}&year=${year}`
+        `/api/admin-usermangement/profit-chart?month=${month}&year=${year}&type=${type}`
       );
       setProfitData(response.data);
       renderChart(response.data);
@@ -49,22 +36,42 @@ const AdminProfitChart = () => {
       chartRef.current.destroy();
     }
 
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
     chartRef.current = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: data.map((entry) => entry.day),
+        labels:
+          type === "yearly"
+            ? data.map(
+                (entry) =>
+                  monthNames[parseInt(entry.label, 10) - 1] || entry.label
+              )
+            : data.map((entry) => `Day ${entry.label}`), // Show 'Day X' for better readability
         datasets: [
           {
-            label: "Daily Profit",
+            label: "Total Profit",
             data: data.map((entry) => entry.totalProfit),
-            backgroundColor: "rgba(34, 197, 94, 0.7)", // Tailwind green-500 with transparency
+            backgroundColor: "rgba(34, 197, 94, 0.7)",
             borderColor: "rgba(34, 197, 94, 1)",
             borderWidth: 1,
           },
         ],
       },
       options: {
-        indexAxis: isMobile ? "y" : "x", // Rotate chart on mobile
         responsive: true,
         maintainAspectRatio: false,
         scales: {
@@ -81,23 +88,34 @@ const AdminProfitChart = () => {
   return (
     <div className="p-6 bg-gray-900 text-white min-h-screen pt-20">
       <h1 className="text-2xl font-bold mb-4 text-center">
-        Monthly Profit Chart
+        {type === "monthly" ? "Monthly Profit Report" : "Yearly Profit Report"}
       </h1>
 
       <div className="flex justify-center space-x-4 mb-6">
         <select
           className="p-2 bg-gray-800 rounded"
-          value={month}
-          onChange={(e) => setMonth(parseInt(e.target.value))}
+          value={type}
+          onChange={(e) => setType(e.target.value)}
         >
-          {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-            <option key={m} value={m}>
-              {new Date(2022, m - 1, 1).toLocaleString("default", {
-                month: "long",
-              })}
-            </option>
-          ))}
+          <option value="monthly">Monthly</option>
+          <option value="yearly">Yearly</option>
         </select>
+
+        {type === "monthly" && (
+          <select
+            className="p-2 bg-gray-800 rounded"
+            value={month}
+            onChange={(e) => setMonth(parseInt(e.target.value))}
+          >
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>
+                {new Date(2022, m - 1, 1).toLocaleString("default", {
+                  month: "long",
+                })}
+              </option>
+            ))}
+          </select>
+        )}
 
         <select
           className="p-2 bg-gray-800 rounded"
@@ -106,7 +124,7 @@ const AdminProfitChart = () => {
         >
           {Array.from(
             { length: 5 },
-            (_, i) => new Date().getFullYear() - i
+            (_, i) => currentDate.getFullYear() - i
           ).map((y) => (
             <option key={y} value={y}>
               {y}

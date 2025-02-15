@@ -58,38 +58,45 @@ export const deleteUser = async (req, res) => {
 
 export const getMonthlyProfit = async (req, res) => {
   try {
-    let { month, year } = req.query;
+    let { month, year, type } = req.query;
 
     const now = new Date();
     month = month ? parseInt(month) : now.getMonth() + 1;
     year = year ? parseInt(year) : now.getFullYear();
 
-    // Calculate start and end dates
-    const startDate = new Date(year, month - 1, 1); // First day of the month
-    const endDate = new Date(year, month, 0, 23, 59, 59); // Last day of the month
+    let matchStage = {
+      $expr: { $eq: [{ $year: "$createdAt" }, year] },
+    };
 
-    // Aggregate total profit per day within the selected month
+    if (type === "monthly") {
+      const startDate = new Date(year, month - 1, 1); // 1st day of the month
+      const endDate = new Date(); // Today (ensures it only fetches up to the current date)
+      matchStage.createdAt = { $gte: startDate, $lte: endDate };
+    }
+
+    const groupStage =
+      type === "yearly"
+        ? {
+            _id: { $month: "$createdAt" }, // Aggregate per month
+            totalProfit: { $sum: "$totalProfit" },
+          }
+        : {
+            _id: { $dayOfMonth: "$createdAt" }, // Aggregate per day
+            totalProfit: { $sum: "$totalProfit" },
+          };
+
     const profitData = await DailySales.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate },
-        },
-      },
-      {
-        $group: {
-          _id: { day: { $dayOfMonth: "$createdAt" } },
-          totalProfit: { $sum: "$totalProfit" },
-        },
-      },
-      { $sort: { "_id.day": 1 } },
+      { $match: matchStage },
+      { $group: groupStage },
+      { $sort: { _id: 1 } },
     ]);
 
-    res.status(200).json(
-      profitData.map((entry) => ({
-        day: entry._id.day,
-        totalProfit: entry.totalProfit,
-      }))
-    );
+    const formattedData = profitData.map((entry) => ({
+      label: entry._id.toString(),
+      totalProfit: entry.totalProfit,
+    }));
+
+    res.status(200).json(formattedData);
   } catch (error) {
     console.error("Error fetching profit data:", error);
     res.status(500).json({ message: "Internal server error" });
