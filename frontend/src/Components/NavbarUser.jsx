@@ -63,28 +63,10 @@ const NavbarUser = () => {
                 UserManagement
               </Link>
               <Link
-                to="/profit-chart"
+                to="/admin-chart"
                 className="hover:text-white transition font-bold"
               >
-                Profit Chart
-              </Link>
-              <Link
-                to="/sales-chart"
-                className="hover:text-white transition font-bold"
-              >
-                Sales-Chart
-              </Link>
-              <Link
-                to="/credit-chart"
-                className="hover:text-white transition font-bold"
-              >
-                Credit-Chart
-              </Link>
-              <Link
-                to="/expense-chart"
-                className="hover:text-white transition font-bold"
-              >
-                Expanse-Chart
+                Admin-Chart
               </Link>
             </>
           )}
@@ -166,18 +148,11 @@ const NavbarUser = () => {
                 UserManagement
               </Link>
               <Link
-                to="/profit-chart"
+                to="/admin-chart"
                 className="hover:text-white transition font-bold"
                 onClick={() => setIsOpen(false)}
               >
-                Profit-Chart
-              </Link>
-              <Link
-                to="/sales-chart"
-                className="hover:text-white transition font-bold"
-                onClick={() => setIsOpen(false)}
-              >
-                Sales-Chart
+                Admin-Chart
               </Link>
             </>
           )}
