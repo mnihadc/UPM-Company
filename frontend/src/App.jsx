@@ -25,6 +25,7 @@ import AdminChart from "./Pages/AdminChart";
 import AdminUserSales from "./Pages/AdminUserSales";
 import AdminUserProfit from "./Pages/AdminUserProfit";
 import AdminUserExpense from "./Pages/AdminUserExpense";
+import AdminUserCredit from "./Pages/AdminUserCredit";
 function App() {
   return (
     <BrowserRouter>
@@ -61,6 +62,7 @@ function App() {
             <Route path="/admin-sales-user" element={<AdminUserSales />} />
             <Route path="/admin-profit-user" element={<AdminUserProfit />} />
             <Route path="/admin-expanse-user" element={<AdminUserExpense />} />
+            <Route path="/admin-credit-user" element={<AdminUserCredit />} />
           </Route>
 
           {/* Auth Routes */}

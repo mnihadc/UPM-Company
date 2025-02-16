@@ -2,6 +2,7 @@ import express from "express";
 import {
   adminSalesUserChart,
   deleteUser,
+  getAdminUserCredits,
   getAdminUserExpenses,
   getAdminUserProfit,
   getCreditReport,
@@ -24,5 +25,6 @@ router.get("/expense-data", getTotalExpenseData);
 router.get("/admin-sales-user", adminSalesUserChart);
 router.get("/admin-profit-user", getAdminUserProfit);
 router.get("/admin-expense-user", getAdminUserExpenses);
+router.get("/admin-credit-user", getAdminUserCredits);
 
 export default router;
