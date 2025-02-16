@@ -319,3 +319,64 @@ export const adminSalesUserChart = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const getAdminUserProfit = async (req, res) => {
+  try {
+    const { filter, date, month, year } = req.query;
+
+    let matchCondition = {};
+
+    if (filter === "today") {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+
+      matchCondition.createdAt = { $gte: startOfToday, $lt: endOfToday };
+    } else if (filter === "date" && date) {
+      const selectedDate = new Date(date);
+      matchCondition.createdAt = {
+        $gte: new Date(selectedDate.setHours(0, 0, 0, 0)),
+        $lt: new Date(selectedDate.setHours(23, 59, 59, 999)),
+      };
+    } else if (filter === "monthly" && month && year) {
+      matchCondition.createdAt = {
+        $gte: new Date(year, month - 1, 1),
+        $lt: new Date(year, month, 1),
+      };
+    }
+
+    const profitData = await DailySales.aggregate([
+      { $match: matchCondition },
+      {
+        $group: {
+          _id: "$userId",
+          totalProfit: { $sum: "$totalProfit" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $project: {
+          _id: 0,
+          userId: "$_id",
+          username: "$user.username",
+          totalProfit: 1,
+        },
+      },
+      { $sort: { totalProfit: -1 } },
+    ]);
+
+    res.json(profitData);
+  } catch (error) {
+    console.error("Error fetching profit data:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
