@@ -24,6 +24,7 @@ import TotalExpenseChart from "./Pages/AdminExpense";
 import AdminChart from "./Pages/AdminChart";
 import AdminUserSales from "./Pages/AdminUserSales";
 import AdminUserProfit from "./Pages/AdminUserProfit";
+import AdminUserExpense from "./Pages/AdminUserExpense";
 function App() {
   return (
     <BrowserRouter>
@@ -59,6 +60,7 @@ function App() {
             <Route path="/admin-chart" element={<AdminChart />} />
             <Route path="/admin-sales-user" element={<AdminUserSales />} />
             <Route path="/admin-profit-user" element={<AdminUserProfit />} />
+            <Route path="/admin-expanse-user" element={<AdminUserExpense />} />
           </Route>
 
           {/* Auth Routes */}

@@ -380,3 +380,58 @@ export const getAdminUserProfit = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getAdminUserExpenses = async (req, res) => {
+  try {
+    const { filter, date, month, year } = req.query;
+    let matchCondition = {};
+
+    if (filter === "today") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      matchCondition = { createdAt: { $gte: today, $lt: tomorrow } };
+    } else if (filter === "date") {
+      const selectedDate = new Date(date);
+      selectedDate.setHours(0, 0, 0, 0);
+      const nextDay = new Date(selectedDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      matchCondition = { createdAt: { $gte: selectedDate, $lt: nextDay } };
+    } else if (filter === "monthly") {
+      const startOfMonth = new Date(year, month - 1, 1);
+      const endOfMonth = new Date(year, month, 0);
+      matchCondition = { createdAt: { $gte: startOfMonth, $lte: endOfMonth } };
+    }
+
+    const expenses = await DailySales.aggregate([
+      { $match: matchCondition },
+      {
+        $group: {
+          _id: "$userId",
+          totalExpense: { $sum: "$totalExpense" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $project: {
+          username: "$user.username",
+          totalExpense: 1,
+        },
+      },
+    ]);
+
+    res.json(expenses);
+  } catch (error) {
+    console.error("Error fetching user expenses:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
