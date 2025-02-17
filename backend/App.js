@@ -6,9 +6,9 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.js";
 import adminUserManagement from "./routes/AdminUserManagement.route.js";
 import salesManagement from "./routes/DailySales.route.js";
-
+import path from "path";
 dotenv.config();
-
+const __dirname = path.resolve();
 const app = express();
 
 // Middleware
@@ -35,7 +35,10 @@ mongoose
   .catch((err) => {
     console.error("Error connecting to MongoDB:", err);
   });
-
+app.use(express.static(path.join(__dirname, "/frontend/dist")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+});
 app.listen(port, () => {
   console.log(`Server is Running on port ${port}!!!`);
 });
