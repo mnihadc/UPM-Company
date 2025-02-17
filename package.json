@@ -1,11 +1,11 @@
 {
   "name": "upm_project",
   "version": "1.0.0",
-  "main": "app.js",
+  "main": "App.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon backend/app.js",
-    "start": "node backend/app.js",
+    "dev": "nodemon backend/App.js",
+    "start": "node backend/App.js",
     "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend"
   },
   "keywords": [],
