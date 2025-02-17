@@ -56,7 +56,7 @@ const AdminUserSales = () => {
           {
             label: "Total Sales",
             data: data.map((entry) => entry.totalSales),
-            backgroundColor: "rgba(0, 191, 255, 0.7)",
+            backgroundColor: "rgba(34, 197, 94, 0.7)",
             borderColor: "rgba(0, 191, 255, 1)",
             borderWidth: 1,
           },

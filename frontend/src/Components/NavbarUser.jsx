@@ -68,6 +68,12 @@ const NavbarUser = () => {
               >
                 Admin-Chart
               </Link>
+              <Link
+                to="/admin-user-chart"
+                className="hover:text-white transition font-bold"
+              >
+                Admin-User-Chart
+              </Link>
             </>
           )}
 
@@ -153,6 +159,13 @@ const NavbarUser = () => {
                 onClick={() => setIsOpen(false)}
               >
                 Admin-Chart
+              </Link>
+              <Link
+                to="/admin-user-chart"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Admin-User-Chart
               </Link>
             </>
           )}
