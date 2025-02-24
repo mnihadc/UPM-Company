@@ -9,15 +9,25 @@ const AdminUserProfit = () => {
   const [filter, setFilter] = useState("today");
   const [date, setDate] = useState("");
   const [profitData, setProfitData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const chartRef = useRef(null);
   const canvasRef = useRef(null);
 
   useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 768;
+
+  useEffect(() => {
     if (filter === "today") {
-      setDate(new Date().toISOString().split("T")[0]); // Set today's date
+      setDate(new Date().toISOString().split("T")[0]);
     } else if (filter === "monthly") {
-      setMonth(currentDate.getMonth() + 1); // Set default month
-      setYear(currentDate.getFullYear()); // Set default year
+      setMonth(currentDate.getMonth() + 1);
+      setYear(currentDate.getFullYear());
     }
   }, [filter]);
 
@@ -26,15 +36,20 @@ const AdminUserProfit = () => {
   }, [filter, month, year, date]);
 
   const fetchProfitData = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         "/api/admin-usermangement/admin-profit-user",
-        { params: { filter, month, year, date } }
+        {
+          params: { filter, month, year, date },
+        }
       );
       setProfitData(response.data);
       renderChart(response.data);
     } catch (error) {
       console.error("Error fetching profit data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,6 +59,11 @@ const AdminUserProfit = () => {
 
     if (chartRef.current) {
       chartRef.current.destroy();
+    }
+
+    if (data.length === 0) {
+      chartRef.current = null;
+      return;
     }
 
     chartRef.current = new Chart(ctx, {
@@ -63,24 +83,22 @@ const AdminUserProfit = () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        indexAxis: isMobile ? "y" : "x",
         scales: {
           x: { grid: { display: false } },
-          y: { beginAtZero: true },
+          y: { beginAtZero: true, grid: { display: !isMobile } },
         },
-        plugins: {
-          legend: { display: false },
-        },
+        plugins: { legend: { display: false } },
       },
     });
   };
 
   return (
-    <div className="p-6 bg-gray-900 text-white min-h-screen pt-20 flex flex-col items-center">
+    <div className="p-2 bg-gray-900 text-white min-h-screen pt-20 flex flex-col items-center">
       <h1 className="text-2xl font-bold mb-6 text-center">
         User Profit Report
       </h1>
 
-      {/* Filter Section */}
       <div className="flex flex-wrap justify-center space-x-4 mb-6">
         <select
           className="p-2 bg-gray-800 rounded"
@@ -135,13 +153,18 @@ const AdminUserProfit = () => {
         )}
       </div>
 
-      {/* Chart Section */}
+      {loading && (
+        <div className="flex justify-center items-center mt-10 mb-6">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-green-500"></div>
+        </div>
+      )}
+
+      {profitData.length === 0 && !loading && (
+        <p className="text-gray-400 text-lg mb-4">No Data Available</p>
+      )}
+
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-3xl mx-auto min-h-[24rem] flex items-center justify-center">
-        {profitData.length > 0 ? (
-          <canvas ref={canvasRef} className="w-full h-96"></canvas>
-        ) : (
-          <p className="text-gray-400 text-lg">No Data Available</p>
-        )}
+        <canvas ref={canvasRef} className="w-full h-96"></canvas>
       </div>
     </div>
   );

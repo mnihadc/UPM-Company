@@ -4,36 +4,42 @@ import { Chart } from "chart.js/auto";
 
 const AdminUserCredit = () => {
   const currentDate = new Date();
-  const today = currentDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
-
+  const today = currentDate.toISOString().split("T")[0];
   const [month, setMonth] = useState(currentDate.getMonth() + 1);
   const [year, setYear] = useState(currentDate.getFullYear());
   const [filter, setFilter] = useState("today");
-  const [date, setDate] = useState(today); // Default date set to today
+  const [date, setDate] = useState(today);
   const [creditData, setCreditData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const chartRef = useRef(null);
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    fetchCreditData();
-  }, [filter, date, month, year]); // Fetch data when filter changes
-
-  useEffect(() => {
-    fetchCreditData(); // Fetch today's data on initial load
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const isMobile = windowWidth < 768;
+
+  useEffect(() => {
+    fetchCreditData();
+  }, [filter, date, month, year]);
+
   const fetchCreditData = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         "/api/admin-usermangement/admin-credit-user",
-        {
-          params: { filter, date, month, year },
-        }
+        { params: { filter, date, month, year } }
       );
       setCreditData(response.data);
       renderChart(response.data);
     } catch (error) {
       console.error("Error fetching credit data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -67,6 +73,7 @@ const AdminUserCredit = () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        indexAxis: isMobile ? "y" : "x",
         scales: {
           x: { grid: { display: false } },
           y: { beginAtZero: true },
@@ -77,18 +84,16 @@ const AdminUserCredit = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-900 text-white min-h-screen pt-20">
-      <h1 className="text-2xl font-bold mb-4 text-center">
+    <div className="p-2 bg-gray-900 text-white min-h-screen pt-20 flex flex-col items-center">
+      <h1 className="text-2xl font-bold mb-6 text-center">
         User Credit Report
       </h1>
-      <div className="flex justify-center space-x-4 mb-6">
+
+      <div className="flex flex-wrap justify-center space-x-4 mb-6">
         <select
           className="p-2 bg-gray-800 rounded"
           value={filter}
-          onChange={(e) => {
-            setFilter(e.target.value);
-            if (e.target.value === "date") setDate(today); // Reset to today when switching to Specific Date
-          }}
+          onChange={(e) => setFilter(e.target.value)}
         >
           <option value="today">Today</option>
           <option value="monthly">Monthly</option>
@@ -138,12 +143,18 @@ const AdminUserCredit = () => {
         )}
       </div>
 
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-3xl mx-auto">
-        {creditData.length > 0 ? (
-          <canvas ref={canvasRef} className="w-full h-96"></canvas>
-        ) : (
-          <p className="text-gray-400 text-lg text-center">No Data Available</p>
-        )}
+      {loading && (
+        <div className="flex justify-center items-center mt-10 mb-6">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500"></div>
+        </div>
+      )}
+
+      {creditData.length === 0 && !loading && (
+        <p className="text-gray-400 text-lg mb-4">No Data Available</p>
+      )}
+
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-3xl mx-auto min-h-[24rem] flex items-center justify-center">
+        <canvas ref={canvasRef} className="w-full h-96"></canvas>
       </div>
     </div>
   );

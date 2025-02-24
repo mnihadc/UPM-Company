@@ -9,8 +9,18 @@ const AdminUserSales = () => {
   const [filter, setFilter] = useState("today");
   const [date, setDate] = useState("");
   const [salesData, setSalesData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const chartRef = useRef(null);
   const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 768; // Check if the device is mobile
 
   useEffect(() => {
     if (filter === "today") {
@@ -26,6 +36,7 @@ const AdminUserSales = () => {
   }, [filter, date, month, year]);
 
   const fetchSalesData = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         "/api/admin-usermangement/admin-sales-user",
@@ -35,6 +46,8 @@ const AdminUserSales = () => {
       renderChart(response.data);
     } catch (error) {
       console.error("Error fetching sales data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,8 +58,6 @@ const AdminUserSales = () => {
     if (chartRef.current) {
       chartRef.current.destroy();
     }
-
-    if (data.length === 0) return; // Prevents rendering an empty chart
 
     chartRef.current = new Chart(ctx, {
       type: "bar",
@@ -65,17 +76,35 @@ const AdminUserSales = () => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        indexAxis: isMobile ? "y" : "x", // Rotate chart for mobile
         scales: {
-          x: { grid: { display: false } },
-          y: { beginAtZero: true },
+          x: {
+            grid: { display: false },
+            beginAtZero: true,
+          },
+          y: {
+            beginAtZero: true,
+            grid: { display: !isMobile }, // Hide grid for y-axis on mobile
+          },
         },
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const label = context.dataset.label || "";
+                const value = context.raw || 0;
+                return `${label}: ${value}`;
+              },
+            },
+          },
+        },
       },
     });
   };
 
   return (
-    <div className="p-6 bg-gray-900 text-white min-h-screen pt-20 flex flex-col items-center">
+    <div className="p-2 bg-gray-900 text-white min-h-screen pt-20 flex flex-col items-center">
       <h1 className="text-2xl font-bold mb-6 text-center">User Sales Report</h1>
 
       {/* Filter Section */}
@@ -133,15 +162,21 @@ const AdminUserSales = () => {
         )}
       </div>
 
-      {/* Message when no data */}
-      {salesData.length === 0 && (
-        <p className="text-gray-400 text-lg mb-4">No Data Available</p>
+      {/* Loading Spinner Outside Chart */}
+      {loading && (
+        <div className="flex justify-center items-center mt-10 mb-6">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-green-500"></div>
+        </div>
       )}
 
-      {/* Chart Section */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-3xl mx-auto min-h-[24rem] flex items-center justify-center">
-        <canvas ref={canvasRef} className="w-full h-96"></canvas>
-      </div>
+      <>
+        {salesData.length === 0 && (
+          <p className="text-gray-400 text-lg mb-4">No Data Available</p>
+        )}
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-3xl mx-auto min-h-[24rem] flex items-center justify-center">
+          <canvas ref={canvasRef} className="w-full h-96"></canvas>
+        </div>
+      </>
     </div>
   );
 };
