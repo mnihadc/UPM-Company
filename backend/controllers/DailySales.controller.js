@@ -300,13 +300,19 @@ export const updateCredit = async (req, res) => {
 
 export const getLeaderboard = async (req, res) => {
   try {
-    const { month, year } = req.query;
+    let { month, year } = req.query;
+
+    // Convert month and year to numbers
+    month = parseInt(month);
+    year = parseInt(year);
 
     let filter = {};
-    if (month && year) {
+
+    // Ensure both month and year are valid before filtering
+    if (!isNaN(month) && !isNaN(year)) {
       filter.createdAt = {
-        $gte: new Date(`${year}-${month}-01`),
-        $lt: new Date(`${year}-${Number(month) + 1}-01`),
+        $gte: new Date(year, month - 1, 1),
+        $lt: new Date(year, month, 1),
       };
     }
 
@@ -321,15 +327,18 @@ export const getLeaderboard = async (req, res) => {
         const user = await User.findById(sale._id).select(
           "username profilePic email"
         );
-        return { ...user._doc, totalSales: sale.totalSales };
+        return user
+          ? { ...user.toObject(), totalSales: sale.totalSales }
+          : null;
       })
     );
 
     res.json({
-      users,
+      users: users.filter(Boolean),
       leader: users.length ? users[0] : null,
     });
   } catch (error) {
+    console.error("Error fetching leaderboard:", error);
     res.status(500).json({ error: "Server error" });
   }
 };

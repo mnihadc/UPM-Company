@@ -47,16 +47,18 @@ const Leaderboard = () => {
     fetchLeaderboard();
   }, [month, year]);
 
+  const filteredUsers = users.filter(
+    (user) =>
+      user.username.toLowerCase().includes(search.toLowerCase()) ||
+      user.email.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="p-6 bg-gray-900 min-h-screen text-white pt-20">
       <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">
         Sales Leaderboard
       </h1>
-
-      {/* Small Bar Under Heading */}
       <div className="w-48 h-1 bg-blue-500 mx-auto mb-6 rounded"></div>
-
-      {/* Filters */}
       <div className="flex flex-wrap justify-center gap-4 mb-6">
         <input
           type="text"
@@ -92,8 +94,6 @@ const Leaderboard = () => {
           </button>
         </Link>
       </div>
-
-      {/* Overall Leader */}
       {leader && (
         <div className="mb-6 p-4 bg-yellow-500 text-black rounded-lg text-center max-w-md mx-auto">
           <h2 className="text-2xl font-bold">Overall Leader</h2>
@@ -102,20 +102,18 @@ const Leaderboard = () => {
           <p className="text-sm">{leader.email}</p>
         </div>
       )}
-
-      {/* Users List */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {users
-          .filter(
-            (user) =>
-              user.username.toLowerCase().includes(search.toLowerCase()) ||
-              user.email.toLowerCase().includes(search.toLowerCase())
-          )
-          .map((user) => (
+        {filteredUsers.map((user) => {
+          const actualRank = users.findIndex((u) => u._id === user._id) + 1; // Correct rank from original list
+
+          return (
             <div
               key={user._id}
-              className="p-4 bg-gray-800 rounded-lg shadow-lg flex flex-col items-center"
+              className="relative p-4 bg-gray-800 rounded-lg shadow-lg flex flex-col items-center"
             >
+              <div className="absolute top-2 left-2 w-8 h-8 flex items-center justify-center bg-blue-500 text-white font-bold rounded-full">
+                {actualRank} {/* Correct ranking based on the original list */}
+              </div>
               <img
                 src={
                   user.profilePic ||
@@ -129,11 +127,9 @@ const Leaderboard = () => {
                 Total Sales: OMR {user.totalSales}
               </p>
               <p className="text-center text-gray-400 text-sm">{user.email}</p>
-
-              {/* Motivational Message */}
               <p className="text-sm text-gray-300 mt-2 text-center italic">
                 {user._id === leader?._id
-                  ? `${user.username}, you're the best employee of overall! 🎉`
+                  ? `${user.username}, you're the best employee overall! 🎉`
                   : `${user.username}, ${
                       motivationalQuotes[
                         Math.floor(Math.random() * motivationalQuotes.length)
@@ -141,7 +137,8 @@ const Leaderboard = () => {
                     }`}
               </p>
             </div>
-          ))}
+          );
+        })}
       </div>
     </div>
   );
