@@ -26,7 +26,7 @@ const userSlice = createSlice({
       state.loading = true;
     },
     signoutUserSuccess: (state) => {
-      state.currentUser = null;
+      state.currentUser = null; // ✅ Clears user data on sign out
       state.loading = false;
       state.error = null;
     },
@@ -36,6 +36,8 @@ const userSlice = createSlice({
     },
   },
 });
+
+// Export actions
 export const {
   signInStart,
   signInSuccess,
@@ -44,4 +46,6 @@ export const {
   signoutUserSuccess,
   signoutUserFailure,
 } = userSlice.actions;
+
+// Export reducer
 export default userSlice.reducer;

@@ -50,9 +50,9 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-6">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg sm:w-96">
-        <h2 className="text-4xl font-semibold text-center text-[#1E3A8A] mb-6">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-50 to-purple-50 p-6">
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg sm:w-96 transform transition-all duration-300 hover:scale-105">
+        <h2 className="text-4xl font-bold text-center text-[#1E3A8A] mb-6">
           Welcome Back!
         </h2>
         <p className="text-xl text-center text-[#374151] mb-8">
@@ -69,7 +69,7 @@ const Login = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full p-4 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+              className="w-full p-4 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all duration-200"
               required
             />
           </div>
@@ -83,7 +83,7 @@ const Login = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full p-4 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+              className="w-full p-4 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all duration-200"
               required
             />
           </div>
@@ -91,13 +91,13 @@ const Login = () => {
           <div className="flex justify-between items-center">
             <a
               href="/forgotpassword-email"
-              className="text-[#10B981] text-sm hover:text-[#1E3A8A] transition duration-200"
+              className="text-[#10B981] text-sm hover:text-[#1E3A8A] transition duration-200 hover:underline"
             >
               Forgot Password?
             </a>
             <a
               href="/signup"
-              className="text-[#10B981] text-sm hover:text-[#1E3A8A] transition duration-200"
+              className="text-[#10B981] text-sm hover:text-[#1E3A8A] transition duration-200 hover:underline"
             >
               Create an Account
             </a>
@@ -106,7 +106,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#2563EB] text-white font-semibold rounded-md hover:bg-[#1E3A8A] transition duration-300 disabled:bg-gray-400"
+            className="w-full py-3 bg-gradient-to-r from-[#2563EB] to-[#1E3A8A] text-white font-semibold rounded-lg hover:from-[#1E3A8A] hover:to-[#2563EB] transition-all duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? "Logging in..." : "Login"}
           </button>

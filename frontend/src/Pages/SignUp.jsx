@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
 const SignupForm = () => {
@@ -14,7 +14,7 @@ const SignupForm = () => {
     gender: "",
     avatar: null,
   });
-  const [loading, setLoading] = useState(false); // Loading state
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const roles = [
@@ -42,9 +42,8 @@ const SignupForm = () => {
       return;
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
 
-    // Prepare data to send to the backend
     const dataToSend = {
       username: formData.username,
       age: formData.age,
@@ -53,7 +52,7 @@ const SignupForm = () => {
       password: formData.password,
       mobile: formData.mobile,
       gender: formData.gender,
-      avatar: formData.avatar ? formData.avatar.name : null, // Send only file name or null
+      avatar: formData.avatar ? formData.avatar.name : null,
     };
 
     try {
@@ -70,7 +69,6 @@ const SignupForm = () => {
       if (response.ok) {
         Swal.fire("Success", "User created successfully!", "success");
         navigate("/email-verify");
-        // Optionally, redirect the user to the login page or home
       } else {
         Swal.fire("Error", data.message, "error");
       }
@@ -78,27 +76,30 @@ const SignupForm = () => {
       console.error("Signup error:", error);
       Swal.fire("Error", "An error occurred. Please try again.", "error");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-[#F3F4F6] p-4">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl flex flex-col md:flex-row gap-8">
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+      <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-4xl flex flex-col md:flex-row gap-8 transform transition-all duration-300 hover:shadow-3xl">
         <div className="flex-1">
-          <div className="flex flex-col items-center mb-6">
-            <h2 className="text-3xl font-semibold text-[#1E3A8A] text-center mb-4">
+          <div className="flex flex-col items-center mb-8">
+            <h2 className="text-4xl font-bold text-[#1E3A8A] text-center mb-4">
               Create an Account
             </h2>
+            <p className="text-lg text-[#6B7280] text-center mb-6">
+              Join us and start your journey today!
+            </p>
             <div className="flex justify-center items-center flex-col text-center mb-6">
               <img
                 src={
                   formData.avatar
                     ? URL.createObjectURL(formData.avatar)
-                    : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCO2sR3EtGqpIpIa-GTVnvdrDHu0WxuzpA8g&s"
+                    : "https://via.placeholder.com/150"
                 }
                 alt="Profile"
-                className="w-32 h-32 rounded-full object-cover mb-4"
+                className="w-32 h-32 rounded-full object-cover mb-4 border-4 border-[#2563EB]"
               />
               <input
                 type="file"
@@ -110,9 +111,9 @@ const SignupForm = () => {
               />
               <label
                 htmlFor="avatar-upload"
-                className="cursor-pointer bg-[#10B981] text-white py-2 px-4 rounded-lg hover:bg-[#0F9D7A] transition-colors duration-300"
+                className="cursor-pointer bg-[#2563EB] text-white py-2 px-6 rounded-lg hover:bg-[#1E40AF] transition-all duration-300"
               >
-                Change Image
+                Upload Image
               </label>
             </div>
           </div>
@@ -120,7 +121,7 @@ const SignupForm = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-semibold text-lg text-[#374151]">
+                <label className="block font-semibold text-lg text-[#374151] mb-2">
                   Username
                 </label>
                 <input
@@ -130,11 +131,11 @@ const SignupForm = () => {
                   value={formData.username}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  className="w-full p-4 border rounded-lg border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all duration-200"
                 />
               </div>
               <div>
-                <label className="block font-semibold text-lg text-[#374151]">
+                <label className="block font-semibold text-lg text-[#374151] mb-2">
                   Age
                 </label>
                 <input
@@ -144,14 +145,14 @@ const SignupForm = () => {
                   value={formData.age}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  className="w-full p-4 border rounded-lg border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all duration-200"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-semibold text-lg text-[#374151]">
+                <label className="block font-semibold text-lg text-[#374151] mb-2">
                   Gender
                 </label>
                 <div className="flex gap-6">
@@ -180,7 +181,7 @@ const SignupForm = () => {
                 </div>
               </div>
               <div>
-                <label className="block font-semibold text-lg text-[#374151]">
+                <label className="block font-semibold text-lg text-[#374151] mb-2">
                   Phone Number
                 </label>
                 <input
@@ -190,14 +191,14 @@ const SignupForm = () => {
                   value={formData.mobile}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  className="w-full p-4 border rounded-lg border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all duration-200"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-semibold text-lg text-[#374151]">
+                <label className="block font-semibold text-lg text-[#374151] mb-2">
                   Email
                 </label>
                 <input
@@ -207,11 +208,11 @@ const SignupForm = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  className="w-full p-4 border rounded-lg border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all duration-200"
                 />
               </div>
               <div>
-                <label className="block font-semibold text-lg text-[#374151]">
+                <label className="block font-semibold text-lg text-[#374151] mb-2">
                   Role
                 </label>
                 <select
@@ -219,7 +220,7 @@ const SignupForm = () => {
                   value={formData.role}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  className="w-full p-4 border rounded-lg border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all duration-200"
                 >
                   <option value="">Select a Role</option>
                   {roles.map((role, index) => (
@@ -233,7 +234,7 @@ const SignupForm = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-semibold text-lg text-[#374151]">
+                <label className="block font-semibold text-lg text-[#374151] mb-2">
                   Password
                 </label>
                 <input
@@ -243,11 +244,11 @@ const SignupForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  className="w-full p-4 border rounded-lg border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all duration-200"
                 />
               </div>
               <div>
-                <label className="block font-semibold text-lg text-[#374151]">
+                <label className="block font-semibold text-lg text-[#374151] mb-2">
                   Confirm Password
                 </label>
                 <input
@@ -257,19 +258,19 @@ const SignupForm = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className="w-full p-4 border rounded-md border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                  className="w-full p-4 border rounded-lg border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all duration-200"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-4 mt-6 bg-[#2563EB] text-white rounded-md hover:bg-[#1E40AF] transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]"
+              className="w-full py-4 mt-6 bg-gradient-to-r from-[#2563EB] to-[#1E40AF] text-white font-semibold rounded-lg hover:from-[#1E40AF] hover:to-[#2563EB] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#1E3A8A] disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
               {loading ? (
-                <div className="spinner-border animate-spin text-white">
-                  Loading...
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                 </div>
               ) : (
                 "Register"

@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  checkAuth,
   getUserProfile,
   getVerifyEmailPage,
   loginUser,
@@ -11,7 +12,7 @@ import {
   verifyEmailOtp,
   verifyOtp,
 } from "../controllers/Auth.controller.js";
-import verifyUser from "../utils/verifyUser.js";
+import { verifyToken } from "../utils/verifyUser.js";
 
 const router = express.Router();
 
@@ -24,7 +25,8 @@ router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 router.post("/forgotpassword-email", sendOtpToEmail);
 router.post("/verifyOtp", verifyOtp);
-router.get("/profile", getUserProfile);
-router.put("/update-profile", updateUserProfile);
+router.get("/profile", verifyToken, getUserProfile);
+router.put("/update-profile", verifyToken, updateUserProfile);
+router.get("/check-auth", checkAuth);
 
 export default router;

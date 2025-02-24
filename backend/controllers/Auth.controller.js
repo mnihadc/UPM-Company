@@ -115,20 +115,6 @@ export const signUp = async (req, res) => {
     // Send OTP email
     await transporter.sendMail(mailOptions);
 
-    // Generate JWT Token
-    const token = jwt.sign(
-      { id: savedUser._id, email: savedUser.email, role: savedUser.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" } // Token expires in 7 days
-    );
-
-    // Set cookie with JWT
-    res.cookie("authToken", token, {
-      httpOnly: true, // Prevent client-side JavaScript from accessing it
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-    });
     // Redirect to email verification page with the token
     res.status(201).json({
       message: "User created successfully. Check your email for OTP.",
@@ -283,7 +269,6 @@ export const resendOtp = async (req, res) => {
 };
 
 // Controller function for user login
-
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -314,23 +299,23 @@ export const loginUser = async (req, res) => {
     if (!user.employee_verify) {
       return res.status(403).json({
         message:
-          "Your account is not verified by the admin. Please contact to admin",
+          "Your account is not verified by the admin. Please contact admin",
       });
     }
 
-    // Generate JWT Token
+    // Generate JWT Token with 24-hour expiration
     const token = jwt.sign(
       { id: user._id, email: user.email, isAdmin: user.isAdmin },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "24h" } // Token expires in 24 hours
     );
 
-    // Store token in httpOnly cookie
+    // Store token in httpOnly cookie with 24-hour expiration
     res.cookie("authToken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 8 * 60 * 60 * 1000, // 8 hour
       sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
     });
 
     // Send only necessary user details to Redux
@@ -482,23 +467,17 @@ export const verifyOtp = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const token = req.cookies.authToken;
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No token provided" });
-    }
+    const userId = req.user.id;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
     const user = await User.findById(userId).select("-password");
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
     res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.error("Get User Profile Error:", error);
+    res.status(500).json({ message: "Server error. Please try again later." });
   }
 };
 
@@ -530,5 +509,20 @@ export const updateUserProfile = async (req, res) => {
   } catch (error) {
     console.error("Error updating profile:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const checkAuth = async (req, res) => {
+  try {
+    const token = req.cookies.authToken; // ✅ Get token from cookies
+
+    if (!token) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return res.status(200).json({ message: "Authenticated", user: decoded });
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
