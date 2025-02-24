@@ -120,12 +120,16 @@ const UserManagement = () => {
   });
 
   return (
-    <div className="p-6 pt-20 bg-black text-white min-h-screen w-full overflow-x-auto">
-      <div className="flex gap-4 mb-4">
+    <div className="p-2 pt-20 bg-black text-white min-h-screen w-full overflow-x-auto">
+      <h1 className="p-2 text-center text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 tracking-wide">
+        User Management
+      </h1>
+
+      <div className="flex flex-col md:flex-row gap-4 mb-4">
         <input
           type="text"
           placeholder="Search users..."
-          className="mb-4 w-full p-2 border border-gray-600 bg-gray-900 text-white rounded"
+          className="w-full p-2 border border-gray-600 bg-gray-900 text-white rounded"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

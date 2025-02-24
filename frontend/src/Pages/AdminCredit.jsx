@@ -88,7 +88,7 @@ const CreditChart = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-900 text-white min-h-screen pt-20">
+    <div className="p-2 bg-gray-900 text-white min-h-screen pt-20">
       <h1 className="text-2xl font-bold mb-4 text-center">
         {type === "monthly" ? "Monthly Credit Report" : "Yearly Credit Report"}
       </h1>

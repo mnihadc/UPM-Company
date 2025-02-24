@@ -8,11 +8,11 @@ function AdminChart() {
   const [activeTab, setActiveTab] = useState("sales");
 
   return (
-    <div className="p-6 bg-gray-900 min-h-screen text-white pt-20">
+    <div className=" bg-gray-900 min-h-screen text-white pt-20">
       <h1 className="text-3xl font-bold text-center mb-6">Admin Reports</h1>
 
       {/* Tabs */}
-      <div className="flex justify-center space-x-4 mb-6">
+      <div className="p-3 flex justify-center space-x-4 mb-6">
         {["sales", "profit", "credit", "expense"].map((tab) => (
           <button
             key={tab}
