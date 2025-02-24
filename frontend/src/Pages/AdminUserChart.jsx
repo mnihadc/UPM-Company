@@ -27,7 +27,7 @@ function AdminUserChart() {
       </div>
 
       {/* Render selected chart */}
-      <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+      <div className="bg-gray-800 rounded-lg shadow-lg">
         {activeTab === "sales" && <AdminUserSales />}
         {activeTab === "profit" && <AdminUserProfit />}
         {activeTab === "credit" && <AdminUserCredit />}

@@ -259,7 +259,7 @@ export const adminSalesUserChart = async (req, res) => {
     let matchStage = {};
 
     if (filter === "today" || !filter) {
-      // Default: Today’s Sales
+      // Today’s Sales
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const todayEnd = new Date();

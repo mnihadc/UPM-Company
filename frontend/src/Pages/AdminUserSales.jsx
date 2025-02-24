@@ -133,13 +133,14 @@ const AdminUserSales = () => {
         )}
       </div>
 
+      {/* Message when no data */}
+      {salesData.length === 0 && (
+        <p className="text-gray-400 text-lg mb-4">No Data Available</p>
+      )}
+
       {/* Chart Section */}
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-3xl mx-auto min-h-[24rem] flex items-center justify-center">
-        {salesData.length > 0 ? (
-          <canvas ref={canvasRef} className="w-full h-96"></canvas>
-        ) : (
-          <p className="text-gray-400 text-lg">No Data Available</p>
-        )}
+        <canvas ref={canvasRef} className="w-full h-96"></canvas>
       </div>
     </div>
   );
