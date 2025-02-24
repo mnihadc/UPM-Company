@@ -449,10 +449,11 @@ export const verifyOtp = async (req, res) => {
     // Hash New Password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update User Password & Clear OTP
+    // Update User Password & Clear OTP & email_verify make it true
     user.password = hashedPassword;
     user.otp = null;
     user.otpExpire = null;
+    user.email_verify = true;
     await user.save();
 
     res.json({
