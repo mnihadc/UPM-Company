@@ -111,7 +111,7 @@ const Leaderboard = () => {
               key={user._id}
               className="relative p-4 bg-gray-800 rounded-lg shadow-lg flex flex-col items-center"
             >
-              <div className="absolute top-2 left-2 w-8 h-8 flex items-center justify-center bg-blue-500 text-white font-bold rounded-full">
+              <div className="absolute top-2 left-2 w-8 h-8 flex items-center justify-center bg-gradient-to-r from-[#FF6B00] via-[#FF4500] to-[#D63400] text-white font-bold rounded-full">
                 {actualRank} {/* Correct ranking based on the original list */}
               </div>
               <img
