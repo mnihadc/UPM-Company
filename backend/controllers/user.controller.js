@@ -2,9 +2,8 @@ import LeaveApplication from "../models/LeaveUser.model.js";
 
 export const createLeaveApplication = async (req, res) => {
   try {
-    const { userId, leaveStartDate, leaveEndDate, leaveType, reason } =
-      req.body;
-
+    const { leaveStartDate, leaveEndDate, leaveType, reason } = req.body;
+    const userId = req.user.id;
     const leaveApplication = new LeaveApplication({
       userId,
       leaveStartDate,

@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import axios from "axios";
 
 const LeaveApplicationPage = () => {
-  // Dummy username from token (replace with actual token logic)
-  const username = "JohnDoe";
+  // Get current user from Redux
+  const { currentUser } = useSelector((state) => state.user);
+  const username = currentUser?.user.username;
+  const email = currentUser?.user.email;
 
   // State for form inputs
   const [leaveType, setLeaveType] = useState("");
@@ -11,43 +15,79 @@ const LeaveApplicationPage = () => {
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
 
+  // State for current date and time
+  const [currentDateTime, setCurrentDateTime] = useState("");
+
+  // Update current date and time every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      setCurrentDateTime(now.toLocaleString());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const leaveApplication = {
       username,
+      email,
       leaveType,
-      startDate,
-      endDate,
+      leaveStartDate: startDate,
+      leaveEndDate: endDate,
       reason,
     };
-    console.log("Leave Application Submitted:", leaveApplication);
-    setMessage("Your leave application has been sent to the admin.");
-    // Clear form fields
-    setLeaveType("");
-    setStartDate("");
-    setEndDate("");
-    setReason("");
+
+    try {
+      // Send leave application to the server
+      const response = await axios.post(
+        "/api/user/create-leave",
+        leaveApplication,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+
+      if (response.status === 201) {
+        setMessage("Your leave application has been sent to the admin.");
+        // Clear form fields
+        setLeaveType("");
+        setStartDate("");
+        setEndDate("");
+        setReason("");
+      }
+    } catch (error) {
+      setMessage("Error submitting leave application. Please try again.");
+      console.error("Error:", error);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-6">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
+    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-2 pt-5">
+      <div className="bg-gray-800 p-4 rounded-lg shadow-lg w-full max-w-md">
+        {/* Current Date and Time */}
+
         <h1 className="text-3xl font-bold mb-6 text-center">
           Leave Application
         </h1>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Username */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Username</label>
-            <input
-              type="text"
-              value={username}
-              readOnly
-              className="w-full bg-gray-700 text-white p-2 rounded-md cursor-not-allowed"
-            />
-          </div>
+        <div className="text-sm text-gray-400 mb-4 text-center">
+          {currentDateTime}
+        </div>
 
+        {/* Display Username and Email */}
+        <div className="mb-6">
+          <p className="text-sm text-gray-400">
+            <span className="font-medium">Username:</span> {username}
+          </p>
+          <p className="text-sm text-gray-400">
+            <span className="font-medium">Email:</span> {email}
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Leave Type */}
           <div>
             <label className="block text-sm font-medium mb-2">Leave Type</label>
@@ -113,9 +153,13 @@ const LeaveApplicationPage = () => {
           </button>
         </form>
 
-        {/* Success Message */}
+        {/* Success or Error Message */}
         {message && (
-          <div className="mt-6 p-4 bg-green-600 text-white rounded-md text-center">
+          <div
+            className={`mt-6 p-4 rounded-md text-center ${
+              message.includes("Error") ? "bg-red-600" : "bg-green-600"
+            }`}
+          >
             {message}
           </div>
         )}
