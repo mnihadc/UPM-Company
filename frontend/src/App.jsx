@@ -28,6 +28,7 @@ import AdminUserExpense from "./Pages/AdminUserExpense";
 import AdminUserCredit from "./Pages/AdminUserCredit";
 import AdminUserChart from "./Pages/AdminUserChart";
 import AdminDailySales from "./Pages/AdminDailyTable";
+import LeaveApplicationPage from "./Pages/LeaveUser";
 function App() {
   return (
     <BrowserRouter>
@@ -50,6 +51,10 @@ function App() {
             <Route
               path="/chart-view-leaderboard"
               element={<LeaderboardChart />}
+            />
+            <Route
+              path="/leave-application-user"
+              element={<LeaveApplicationPage />}
             />
           </Route>
 
