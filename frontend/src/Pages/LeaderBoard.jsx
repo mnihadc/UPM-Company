@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { ClipLoader } from "react-spinners";
 
 const months = [
   "January",
@@ -31,9 +32,11 @@ const Leaderboard = () => {
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
   const [leader, setLeader] = useState(null);
+  const [loading, setLoading] = useState(true); // Added loading state
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
+      setLoading(true); // Start loading
       try {
         const { data } = await axios.get(
           `/api/sales/leaderboard?month=${month}&year=${year}`
@@ -43,6 +46,7 @@ const Leaderboard = () => {
       } catch (error) {
         console.error("Error fetching leaderboard", error);
       }
+      setLoading(false); // Stop loading
     };
     fetchLeaderboard();
   }, [month, year]);
@@ -54,11 +58,12 @@ const Leaderboard = () => {
   );
 
   return (
-    <div className="p-6 bg-gray-900 min-h-screen text-white pt-20">
+    <div className="p-4 bg-gray-900 min-h-screen text-white pt-16">
       <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">
         Sales Leaderboard
       </h1>
       <div className="w-48 h-1 bg-blue-500 mx-auto mb-6 rounded"></div>
+
       <div className="flex flex-wrap justify-center gap-4 mb-6">
         <input
           type="text"
@@ -94,52 +99,68 @@ const Leaderboard = () => {
           </button>
         </Link>
       </div>
-      {leader && (
-        <div className="mb-6 p-4 bg-yellow-500 text-black rounded-lg text-center max-w-md mx-auto">
-          <h2 className="text-2xl font-bold">Overall Leader</h2>
-          <p className="text-lg font-semibold">{leader.username}</p>
-          <p className="text-lg">OMR: {leader.totalSales}</p>
-          <p className="text-sm">{leader.email}</p>
-        </div>
-      )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {filteredUsers.map((user) => {
-          const actualRank = users.findIndex((u) => u._id === user._id) + 1; // Correct rank from original list
 
-          return (
-            <div
-              key={user._id}
-              className="relative p-4 bg-gray-800 rounded-lg shadow-lg flex flex-col items-center"
-            >
-              <div className="absolute top-2 left-2 w-8 h-8 flex items-center justify-center bg-gradient-to-r from-[#FF6B00] via-[#FF4500] to-[#D63400] text-white font-bold rounded-full">
-                {actualRank} {/* Correct ranking based on the original list */}
-              </div>
-              <img
-                src={
-                  user.profilePic ||
-                  "https://media.istockphoto.com/id/610003972/vector/vector-businessman-black-silhouette-isolated.jpg?s=612x612&w=0&k=20&c=Iu6j0zFZBkswfq8VLVW8XmTLLxTLM63bfvI6uXdkacM="
-                }
-                alt={user.username}
-                className="w-16 h-16 rounded-full"
-              />
-              <h3 className="text-xl font-semibold mt-2">{user.username}</h3>
-              <p className="text-center text-green-400 font-bold">
-                Total Sales: OMR {user.totalSales}
-              </p>
-              <p className="text-center text-gray-400 text-sm">{user.email}</p>
-              <p className="text-sm text-gray-300 mt-2 text-center italic">
-                {user._id === leader?._id
-                  ? `${user.username}, you're the best employee overall! 🎉`
-                  : `${user.username}, ${
-                      motivationalQuotes[
-                        Math.floor(Math.random() * motivationalQuotes.length)
-                      ]
-                    }`}
-              </p>
+      {loading ? (
+        <div className="flex justify-center items-center h-40">
+          <ClipLoader color="#FFD700" size={50} />
+        </div>
+      ) : (
+        <>
+          {leader && (
+            <div className="mb-6 p-4 bg-yellow-500 text-black rounded-lg text-center max-w-md mx-auto">
+              <h2 className="text-2xl font-bold">Overall Leader</h2>
+              <p className="text-lg font-semibold">{leader.username}</p>
+              <p className="text-lg">OMR: {leader.totalSales}</p>
+              <p className="text-sm">{leader.email}</p>
             </div>
-          );
-        })}
-      </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {filteredUsers.map((user) => {
+              const actualRank = users.findIndex((u) => u._id === user._id) + 1;
+
+              return (
+                <div
+                  key={user._id}
+                  className="relative p-4 bg-gray-800 rounded-lg shadow-lg flex flex-col items-center"
+                >
+                  <div className="absolute top-2 left-2 w-8 h-8 flex items-center justify-center bg-gradient-to-r from-[#FF6B00] via-[#FF4500] to-[#D63400] text-white font-bold rounded-full">
+                    {actualRank}
+                  </div>
+                  <img
+                    src={
+                      user.profilePic ||
+                      "https://media.istockphoto.com/id/610003972/vector/vector-businessman-black-silhouette-isolated.jpg?s=612x612&w=0&k=20&c=Iu6j0zFZBkswfq8VLVW8XmTLLxTLM63bfvI6uXdkacM="
+                    }
+                    alt={user.username}
+                    className="w-16 h-16 rounded-full"
+                  />
+                  <h3 className="text-xl font-semibold mt-2">
+                    {user.username}
+                  </h3>
+                  <p className="text-center text-green-400 font-bold">
+                    Total Sales: OMR {user.totalSales}
+                  </p>
+                  <p className="text-center text-gray-400 text-sm">
+                    {user.email}
+                  </p>
+                  <p className="text-sm text-gray-300 mt-2 text-center italic">
+                    {user._id === leader?._id
+                      ? `${user.username}, you're the best employee overall! 🎉`
+                      : `${user.username}, ${
+                          motivationalQuotes[
+                            Math.floor(
+                              Math.random() * motivationalQuotes.length
+                            )
+                          ]
+                        }`}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 };
