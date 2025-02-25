@@ -490,3 +490,29 @@ export const getAdminUserCredits = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const GetAdminDailySales = async (req, res) => {
+  try {
+    let { date } = req.query;
+
+    // Default to today's date
+    const today = new Date();
+    if (!date) {
+      date = today.toISOString().split("T")[0];
+    }
+
+    // Start and end range for the selected date
+    const startOfDay = new Date(date);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const salesData = await DailySales.find({
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
+    }).populate("userId", "username email");
+
+    res.status(200).json(salesData);
+  } catch (error) {
+    console.error("Error fetching admin daily sales:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

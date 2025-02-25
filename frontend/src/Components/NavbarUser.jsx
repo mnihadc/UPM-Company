@@ -63,6 +63,12 @@ const NavbarUser = () => {
                 UserManagement
               </Link>
               <Link
+                to="/leader-board"
+                className="hover:text-white transition font-bold"
+              >
+                LeaderBoard
+              </Link>
+              <Link
                 to="/admin-chart"
                 className="hover:text-white transition font-bold"
               >
@@ -73,6 +79,12 @@ const NavbarUser = () => {
                 className="hover:text-white transition font-bold"
               >
                 Admin-User-Chart
+              </Link>
+              <Link
+                to="/admin-daily-sales"
+                className="hover:text-white transition font-bold"
+              >
+                Daily-Sales_Table
               </Link>
             </>
           )}
@@ -154,6 +166,13 @@ const NavbarUser = () => {
                 UserManagement
               </Link>
               <Link
+                to="/leader-board"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                LeaderBoard
+              </Link>
+              <Link
                 to="/admin-chart"
                 className="hover:text-white transition font-bold"
                 onClick={() => setIsOpen(false)}
@@ -166,6 +185,13 @@ const NavbarUser = () => {
                 onClick={() => setIsOpen(false)}
               >
                 Admin-User-Chart
+              </Link>
+              <Link
+                to="/admin-daily-sales"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Daily-Sales_Table
               </Link>
             </>
           )}
