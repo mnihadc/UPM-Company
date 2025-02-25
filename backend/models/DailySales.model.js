@@ -1,10 +1,15 @@
 import mongoose from "mongoose";
 
 const CustomerSchema = new mongoose.Schema({
+  file: { type: Number, required: true },
   name: { type: String, required: true },
-  sales: { type: Number, required: true },
-  profit: { type: Number, required: true },
-  credit: { type: Number, required: true },
+  description: { type: String, required: false },
+  sales: { type: Number, required: true, min: 0 },
+  profit: { type: Number, required: true, min: 0 },
+  credit: { type: Number, required: true, min: 0 },
+  expense: { type: Number, required: true, min: 0 },
+  vat: { type: Number, required: true, min: 0 },
+  parts: { type: Number, required: true, min: 0 },
 });
 
 const DailySalesSchema = new mongoose.Schema(

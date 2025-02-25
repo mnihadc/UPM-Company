@@ -6,19 +6,16 @@ import mongoose from "mongoose";
 
 export const createDailySales = async (req, res) => {
   try {
-    const { userId, totalSales, totalExpense, totalProfit, customers } =
-      req.body;
+    const { userId, customers } = req.body;
 
-    // Check if user exists
+    // Check if the user exists
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Get today's date (YYYY-MM-DD) for comparison
+    // Get today's date
     const today = new Date().toISOString().split("T")[0];
 
-    // Check if user has already submitted sales today
+    // Check if sales data already exists for today
     const existingSales = await DailySales.findOne({
       userId,
       createdAt: {
@@ -27,14 +24,35 @@ export const createDailySales = async (req, res) => {
       },
     });
 
+    // Calculate totals
+    const totalSales = customers.reduce(
+      (sum, c) => sum + Number(c.sales || 0),
+      0
+    );
+    const totalProfit = customers.reduce(
+      (sum, c) => sum + Number(c.profit || 0),
+      0
+    );
+    const totalExpense = customers.reduce(
+      (sum, c) => sum + Number(c.expense || 0),
+      0
+    );
+
+    // If sales data exists for today, update it
     if (existingSales) {
-      return res.status(400).json({
-        message:
-          "You have already submitted today's sales report. Please submit again tomorrow.",
+      existingSales.customers = customers;
+      existingSales.totalSales = totalSales;
+      existingSales.totalProfit = totalProfit;
+      existingSales.totalExpense = totalExpense;
+
+      await existingSales.save();
+      return res.status(200).json({
+        message: "Daily sales updated successfully",
+        salesData: existingSales,
       });
     }
 
-    // Create new DailySales entry
+    // If no sales data exists for today, create a new entry
     const newSalesEntry = new DailySales({
       userId,
       totalSales,
@@ -43,13 +61,13 @@ export const createDailySales = async (req, res) => {
       customers,
     });
 
-    // Save to database
     await newSalesEntry.save();
-    res
-      .status(201)
-      .json({ message: "Daily sales recorded successfully", newSalesEntry });
+    res.status(201).json({
+      message: "Daily sales recorded successfully",
+      salesData: newSalesEntry,
+    });
   } catch (error) {
-    console.error("Error creating daily sales:", error);
+    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -96,6 +114,9 @@ export const updateDailySales = async (req, res) => {
 
     if (_id) {
       salesEntry = await DailySales.findById(_id);
+      if (!salesEntry) {
+        return res.status(404).json({ message: "Sales entry not found" });
+      }
     } else {
       salesEntry = await DailySales.findOne({
         userId,
@@ -118,7 +139,7 @@ export const updateDailySales = async (req, res) => {
       const newSales = new DailySales({
         userId,
         totalSales,
-        totalExpense,
+        totalExpense: totalExpense,
         totalProfit,
         customers,
       });
