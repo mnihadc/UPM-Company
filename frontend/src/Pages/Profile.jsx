@@ -9,6 +9,7 @@ import {
   signoutUserSuccess,
   signoutUserFailure,
 } from "../Redux/user/userSlice";
+import Leave from "../Components/Leave";
 
 const Profile = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -260,6 +261,8 @@ const Profile = () => {
               </div>
             </form>
           </div>
+          {!currentUser?.user.isAdmin && <Leave />}
+          <div className=""></div>
         </div>
       )}
     </div>
