@@ -158,24 +158,46 @@ export const updateDailySales = async (req, res) => {
 
 export const dailySales = async (req, res) => {
   try {
-    // ✅ Read token from cookies (or headers if needed)
-    const token = req.cookies.authToken;
+    const user = req.user; // Get user ID from request
+    const userId = user.id;
 
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized: No token provided" });
+    let { startDate, endDate } = req.query;
+
+    // Ensure both dates are provided, else use the latest date
+    if (!startDate || !endDate) {
+      const userSales = await DailySales.find({ userId })
+        .populate("userId", "email")
+        .sort({ createdAt: -1 });
+
+      if (!userSales.length) {
+        return res.status(404).json({ message: "No sales data found." });
+      }
+
+      const lastDate = userSales[0].createdAt.toISOString().split("T")[0];
+      startDate = lastDate;
+      endDate = lastDate;
     }
 
-    // ✅ Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Convert dates to proper format for querying
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999); // Include the full end date
 
-    const userId = decoded.id;
+    // Filter sales data within the selected date range
+    const filteredSales = await DailySales.find({
+      userId,
+      createdAt: { $gte: start, $lte: end },
+    })
+      .populate("userId", "email")
+      .sort({ createdAt: -1 });
 
-    // ✅ Fetch sales for the logged-in user
-    const salesData = await DailySales.find({ userId }).sort({ createdAt: -1 });
+    if (!filteredSales.length) {
+      return res
+        .status(404)
+        .json({ message: "No sales data found in this range." });
+    }
 
-    res.status(200).json(salesData);
+    res.status(200).json(filteredSales);
   } catch (error) {
     console.error("Daily Sales Error:", error.message);
     res
