@@ -6,6 +6,7 @@ import cors from "cors";
 import authRoutes from "./routes/auth.route.js";
 import adminUserManagement from "./routes/AdminUserManagement.route.js";
 import salesManagement from "./routes/DailySales.route.js";
+import userRoutes from "./routes/user.route.js";
 import path from "path";
 dotenv.config();
 const __dirname = path.resolve();
@@ -28,6 +29,7 @@ const port = process.env.PORT;
 app.use("/api/auth", authRoutes);
 app.use("/api/admin-usermangement", adminUserManagement);
 app.use("/api/sales", salesManagement);
+app.use("/api/user", userRoutes);
 
 // Connect to MongoDB
 mongoose

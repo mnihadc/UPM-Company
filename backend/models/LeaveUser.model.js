@@ -40,4 +40,4 @@ const LeaveApplication = mongoose.model(
   leaveApplicationSchema
 );
 
-module.exports = LeaveApplication;
+export default LeaveApplication;
