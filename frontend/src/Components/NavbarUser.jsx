@@ -86,6 +86,12 @@ const NavbarUser = () => {
               >
                 Daily-Sales_Table
               </Link>
+              <Link
+                to="/admin-leave-application"
+                className="hover:text-white transition font-bold"
+              >
+                Leave-Application
+              </Link>
             </>
           )}
 
@@ -192,6 +198,13 @@ const NavbarUser = () => {
                 onClick={() => setIsOpen(false)}
               >
                 Daily-Sales_Table
+              </Link>
+              <Link
+                to="/admin-leave-application"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Leave-Application
               </Link>
             </>
           )}

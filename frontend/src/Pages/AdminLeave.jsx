@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
-
+import Swal from "sweetalert2";
 const AdminLeavePage = () => {
   const [leaveApplications, setLeaveApplications] = useState({
     pending: [],
@@ -57,6 +57,83 @@ const AdminLeavePage = () => {
     );
   }
 
+  const updateLeaveStatus = async (id, status) => {
+    // Confirmation dialog
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you want to change the status to ${status}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, update it!",
+    });
+
+    // If user confirms, proceed with the update
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.put(
+          `/api/user/leave-applications/${id}/status`,
+          { status },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        // Update the leave applications state
+        setLeaveApplications((prev) => {
+          const updatedLeave = response.data;
+          const updatedPending = prev.pending.filter(
+            (leave) => leave._id !== id
+          );
+          const updatedApproved = prev.approved.filter(
+            (leave) => leave._id !== id
+          );
+          const updatedRejected = prev.rejected.filter(
+            (leave) => leave._id !== id
+          );
+
+          if (status === "Pending") {
+            updatedPending.push(updatedLeave);
+          } else if (status === "Approved") {
+            updatedApproved.push(updatedLeave);
+          } else if (status === "Rejected") {
+            updatedRejected.push(updatedLeave);
+          }
+
+          return {
+            pending: updatedPending,
+            approved: updatedApproved,
+            rejected: updatedRejected,
+          };
+        });
+
+        // Show success message
+        Swal.fire({
+          title: "Updated!",
+          text: `The status has been changed to ${status}.`,
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        console.error("Error updating leave status:", error);
+        setError("Failed to update leave status. Please try again.");
+
+        // Show error message
+        Swal.fire({
+          title: "Error!",
+          text: "Failed to update leave status. Please try again.",
+          icon: "error",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-3 pt-12">
       <h1 className="text-3xl font-bold mb-4 text-center">
@@ -93,6 +170,9 @@ const AdminLeavePage = () => {
                     Created At
                   </th>
                   <th className="px-6 py-3 border-b border-gray-700">Status</th>
+                  <th className="px-6 py-3 border-b border-gray-700">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -117,12 +197,26 @@ const AdminLeavePage = () => {
                       {leave.reason}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
-                      {new Date(leave.createdAt).toLocaleDateString()}
+                      {new Date(leave.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
                       <span className="bg-yellow-600 px-2 py-1 rounded-full text-sm">
                         {leave.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-700">
+                      <button
+                        onClick={() => updateLeaveStatus(leave._id, "Approved")}
+                        className="bg-green-600 px-2 py-1 rounded-full text-sm mr-2"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => updateLeaveStatus(leave._id, "Rejected")}
+                        className="bg-red-600 px-2 py-1 rounded-full text-sm"
+                      >
+                        Reject
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -162,6 +256,9 @@ const AdminLeavePage = () => {
                     Created At
                   </th>
                   <th className="px-6 py-3 border-b border-gray-700">Status</th>
+                  <th className="px-6 py-3 border-b border-gray-700">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -186,12 +283,26 @@ const AdminLeavePage = () => {
                       {leave.reason}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
-                      {new Date(leave.createdAt).toLocaleDateString()}
+                      {new Date(leave.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
                       <span className="bg-green-600 px-2 py-1 rounded-full text-sm">
                         {leave.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-700">
+                      <button
+                        onClick={() => updateLeaveStatus(leave._id, "Pending")}
+                        className="bg-yellow-600 px-2 py-1 rounded-full text-sm mr-2"
+                      >
+                        Set Pending
+                      </button>
+                      <button
+                        onClick={() => updateLeaveStatus(leave._id, "Rejected")}
+                        className="bg-red-600 px-2 py-1 rounded-full text-sm"
+                      >
+                        Reject
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -231,6 +342,9 @@ const AdminLeavePage = () => {
                     Created At
                   </th>
                   <th className="px-6 py-3 border-b border-gray-700">Status</th>
+                  <th className="px-6 py-3 border-b border-gray-700">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -255,12 +369,26 @@ const AdminLeavePage = () => {
                       {leave.reason}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
-                      {new Date(leave.createdAt).toLocaleDateString()}
+                      {new Date(leave.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
                       <span className="bg-red-600 px-2 py-1 rounded-full text-sm">
                         {leave.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-700">
+                      <button
+                        onClick={() => updateLeaveStatus(leave._id, "Pending")}
+                        className="bg-yellow-600 px-2 py-1 rounded-full text-sm mr-2"
+                      >
+                        Set Pending
+                      </button>
+                      <button
+                        onClick={() => updateLeaveStatus(leave._id, "Approved")}
+                        className="bg-green-600 px-2 py-1 rounded-full text-sm "
+                      >
+                        Approve
+                      </button>
                     </td>
                   </tr>
                 ))}

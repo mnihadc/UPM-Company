@@ -68,3 +68,33 @@ export const getLeaveApplications = async (req, res) => {
       .json({ message: "Error fetching leave applications", error });
   }
 };
+
+// Update leave application status
+export const updateLeaveApplication = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    // Validate the status
+    if (!["Pending", "Approved", "Rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    // Find and update the leave application
+    const updatedLeave = await LeaveApplication.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    ).populate("userId", "username email");
+
+    if (!updatedLeave) {
+      return res.status(404).json({ message: "Leave application not found" });
+    }
+
+    res.status(200).json(updatedLeave);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error updating leave application", error });
+  }
+};
