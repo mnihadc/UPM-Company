@@ -124,7 +124,7 @@ const UserManagement = () => {
       <h1 className="p-2 text-center text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 tracking-wide">
         User Management
       </h1>
-
+      <div className="w-48 h-1 bg-blue-500 mx-auto mb-6 rounded"></div>
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <input
           type="text"

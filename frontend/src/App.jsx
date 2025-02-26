@@ -29,6 +29,7 @@ import AdminUserCredit from "./Pages/AdminUserCredit";
 import AdminUserChart from "./Pages/AdminUserChart";
 import AdminDailySales from "./Pages/AdminDailyTable";
 import LeaveApplicationPage from "./Pages/LeaveUser";
+import AdminLeavePage from "./Pages/AdminLeave";
 function App() {
   return (
     <BrowserRouter>
@@ -72,6 +73,10 @@ function App() {
             <Route path="/admin-credit-user" element={<AdminUserCredit />} />
             <Route path="/admin-user-chart" element={<AdminUserChart />} />
             <Route path="/admin-daily-sales" element={<AdminDailySales />} />
+            <Route
+              path="/admin-leave-application"
+              element={<AdminLeavePage />}
+            />
           </Route>
 
           {/* Auth Routes */}

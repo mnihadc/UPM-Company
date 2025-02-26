@@ -42,3 +42,29 @@ export const getLeave = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const getLeaveApplications = async (req, res) => {
+  try {
+    // Fetch all leave applications sorted by createdAt in descending order
+    const leaveApplications = await LeaveApplication.find()
+      .sort({ createdAt: -1 }) // Latest applications first
+      .populate("userId", "username email"); // Populate user details
+
+    // Group leave applications by status
+    const groupedLeaves = {
+      pending: leaveApplications.filter((leave) => leave.status === "Pending"),
+      approved: leaveApplications.filter(
+        (leave) => leave.status === "Approved"
+      ),
+      rejected: leaveApplications.filter(
+        (leave) => leave.status === "Rejected"
+      ),
+    };
+
+    res.status(200).json(groupedLeaves);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching leave applications", error });
+  }
+};
