@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Download } from "lucide-react";
 import { Link } from "react-router-dom";
+import FileSaver from "file-saver";
+import "jspdf-autotable";
 
 const GetDailySales = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -14,7 +16,7 @@ const GetDailySales = () => {
 
   const [startDate, setStartDate] = useState(""); // Start Date
   const [endDate, setEndDate] = useState(""); // End Date
-
+  const [downloadFormat, setDownloadFormat] = useState("pdf");
   const fetchSalesData = async () => {
     try {
       setLoading(true);
@@ -50,6 +52,43 @@ const GetDailySales = () => {
   useEffect(() => {
     fetchSalesData();
   }, [startDate, endDate]);
+
+  const handleDownload = async (saleId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const url =
+        downloadFormat === "excel"
+          ? `/api/user/dowload-user-sales-excel/${saleId}`
+          : `/api/user/dowload-user-sales-pdf/${saleId}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to download file. Status: ${response.status}`);
+      }
+
+      // Convert response into a Blob
+      const blob = await response.blob();
+      const fileExtension = downloadFormat === "excel" ? "xlsx" : "pdf";
+      FileSaver.saveAs(blob, `sales_data_${saleId}.${fileExtension}`);
+    } catch (error) {
+      console.error("Download error:", error);
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-2 pt-20">
       <div className="max-w-6xl mx-auto bg-gray-800 p-3 rounded-lg shadow-xl">
@@ -108,6 +147,16 @@ const GetDailySales = () => {
                     <th className="p-3">Total Sales</th>
                     <th className="p-3">Total Profit</th>
                     <th className="p-3 text-center">Customers</th>
+                    <th className="p-3">
+                      <select
+                        value={downloadFormat}
+                        onChange={(e) => setDownloadFormat(e.target.value)}
+                        className="bg-gray-700 text-white p-2 rounded-lg"
+                      >
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                      </select>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -120,6 +169,7 @@ const GetDailySales = () => {
                         <td className="p-3">OMR: {sale.totalExpense}</td>
                         <td className="p-3">OMR: {sale.totalSales}</td>
                         <td className="p-3">OMR: {sale.totalProfit}</td>
+
                         <td className="p-3 text-center">
                           <button
                             onClick={() =>
@@ -135,6 +185,16 @@ const GetDailySales = () => {
                               <ChevronDown />
                             )}
                           </button>
+                        </td>
+                        <td className="p-3">
+                          <td className="p-3">
+                            <button
+                              onClick={() => handleDownload(sale._id)}
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              <Download size={24} />
+                            </button>
+                          </td>
                         </td>
                       </tr>
 
