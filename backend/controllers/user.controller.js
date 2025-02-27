@@ -268,3 +268,195 @@ export const downloadSalesUserPDF = async (req, res) => {
     res.status(500).json({ message: "Error generating file" });
   }
 };
+
+export const generateAdminDailySalesPDF = async (req, res) => {
+  try {
+    const { saleId } = req.params;
+    const sale = await DailySales.findById(saleId).populate("userId");
+
+    if (!sale) {
+      return res.status(404).json({ error: "Sale data not found" });
+    }
+
+    const user = sale.userId;
+    const username = user.username || "N/A";
+    const email = user.email || "N/A";
+    const date = new Date(sale.createdAt).toISOString().split("T")[0];
+    const filename = `${username}_${date}.pdf`;
+
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(20);
+    doc.text("Daily Sales Report", 105, 15, { align: "center" });
+
+    // User Details
+    doc.setFontSize(14);
+    doc.text(`Username: ${username}`, 14, 30);
+    doc.text(`Email: ${email}`, 14, 40);
+    doc.text(
+      `Date & Time: ${new Date(sale.createdAt).toLocaleString()}`,
+      14,
+      50
+    );
+
+    // Sales Data Table
+    doc.autoTable({
+      startY: 60,
+      head: [["Total Sales", "Total Expense", "Total Profit"]],
+      body: [
+        [
+          `OMR ${sale.totalSales.toFixed(3)}`,
+          `OMR ${sale.totalExpense.toFixed(3)}`,
+          `OMR ${sale.totalProfit.toFixed(3)}`,
+        ],
+      ],
+    });
+
+    let lastY = doc.lastAutoTable.finalY + 10;
+
+    // Customer Data Table
+    if (sale.customers && sale.customers.length > 0) {
+      doc.text("Customer Details", 14, lastY);
+
+      doc.autoTable({
+        startY: lastY + 10,
+        head: [
+          [
+            "#",
+            "Name",
+            "Description",
+            "Sales",
+            "Profit",
+            "Credit",
+            "Expense",
+            "VAT",
+            "Parts",
+          ],
+        ],
+        body: sale.customers.map((customer, index) => [
+          index + 1,
+          customer.name,
+          customer.description || "N/A",
+          `OMR ${customer.sales.toFixed(3)}`,
+          `OMR ${customer.profit.toFixed(3)}`,
+          `OMR ${customer.credit.toFixed(3)}`,
+          `OMR ${customer.expense.toFixed(3)}`,
+          `OMR ${customer.vat.toFixed(3)}`,
+          `OMR ${customer.parts.toFixed(3)}`,
+        ]),
+      });
+    }
+
+    // Send as a downloadable PDF
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Content-Type", "application/pdf");
+
+    const pdfBuffer = doc.output("arraybuffer");
+    res.send(Buffer.from(pdfBuffer));
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    res.status(500).json({ error: "Failed to generate PDF" });
+  }
+};
+
+export const generateAdminDailySalesExcel = async (req, res) => {
+  try {
+    const { saleId } = req.params;
+
+    const sale = await DailySales.findById(saleId).populate("userId customers");
+
+    if (!sale) {
+      return res.status(404).json({ message: "Sales data not found" });
+    }
+
+    const user = sale.userId;
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const username = user.username || "Unknown_User";
+    const email = user.email || "N/A";
+    const date = new Date(sale.createdAt).toISOString().split("T")[0];
+    const filename = `Sales_Report_${username}_${date}.xlsx`;
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Sales Report");
+
+    // **User Information**
+    worksheet.addRow(["Username", username]);
+    worksheet.addRow(["Email", email]);
+    worksheet.addRow([]); // Empty row for spacing
+
+    // **Sales Summary**
+    const headerRow = worksheet.addRow([
+      "Date & Time",
+      "Total Sales (OMR)",
+      "Total Expense (OMR)",
+      "Total Profit (OMR)",
+    ]);
+
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: "FFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "0070C0" },
+      };
+      cell.alignment = { horizontal: "center" };
+      cell.border = { top: { style: "thin" }, bottom: { style: "thin" } };
+    });
+
+    worksheet.addRow([
+      new Date(sale.createdAt).toLocaleString(),
+      sale.totalSales,
+      sale.totalExpense,
+      sale.totalProfit,
+    ]);
+
+    worksheet.addRow([]); // Empty row for spacing
+
+    // **Customer Sales Data**
+    if (Array.isArray(sale.customers) && sale.customers.length > 0) {
+      worksheet.addRow([
+        "File",
+        "Name",
+        "Description",
+        "Sales (OMR)",
+        "Profit (OMR)",
+        "Credit (OMR)",
+        "Expense (OMR)",
+        "VAT (OMR)",
+        "Parts (OMR)",
+      ]);
+
+      sale.customers.forEach((customer) => {
+        worksheet.addRow([
+          customer.file || "N/A",
+          customer.name,
+          customer.description || "-",
+          customer.sales,
+          customer.profit,
+          customer.credit,
+          customer.expense,
+          customer.vat,
+          customer.parts,
+        ]);
+      });
+    }
+
+    // **Set Response Headers**
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    // **Write File Buffer and Send Response**
+    const buffer = await workbook.xlsx.writeBuffer();
+    res.send(Buffer.from(buffer));
+  } catch (error) {
+    console.error("Error generating Excel:", error);
+    res.status(500).json({ message: "Error generating file" });
+  }
+};

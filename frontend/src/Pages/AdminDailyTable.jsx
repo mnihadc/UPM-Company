@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Download } from "lucide-react";
 
 const AdminDailySales = () => {
   const [salesData, setSalesData] = useState([]);
@@ -10,7 +10,7 @@ const AdminDailySales = () => {
     new Date().toISOString().split("T")[0]
   );
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [downloadFormat, setDownloadFormat] = useState("pdf");
   const fetchSalesData = async () => {
     try {
       setLoading(true);
@@ -51,6 +51,46 @@ const AdminDailySales = () => {
       sale.userId?.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       sale.userId?.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleDownload = async (sale) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      if (!token) return;
+
+      const username = sale.userId?.username || "user";
+      const date = new Date(sale.createdAt).toISOString().split("T")[0];
+      const filename = `${username}_${date}.${downloadFormat}`;
+
+      let downloadUrl = "";
+
+      if (downloadFormat === "pdf") {
+        downloadUrl = `/api/user/admin-daily-sales-pdf/${sale._id}`;
+      } else if (downloadFormat === "xlsx") {
+        downloadUrl = `/api/user/admin-daily-sales-excel/${sale._id}`;
+      }
+
+      const response = await fetch(downloadUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to download file");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-2 pt-20">
@@ -97,6 +137,16 @@ const AdminDailySales = () => {
                       <th className="p-3">Total Sales</th>
                       <th className="p-3">Total Profit</th>
                       <th className="p-3 text-center">Customers</th>
+                      <th className="p-3">
+                        <select
+                          className="bg-gray-700 text-white p-2 rounded-lg"
+                          value={downloadFormat}
+                          onChange={(e) => setDownloadFormat(e.target.value)}
+                        >
+                          <option value="pdf">PDF</option>
+                          <option value="xlsx">Excel</option>
+                        </select>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -133,6 +183,14 @@ const AdminDailySales = () => {
                               ) : (
                                 <ChevronDown />
                               )}
+                            </button>
+                          </td>
+                          <td className="p-3">
+                            <button
+                              className="text-blue-500 hover:text-blue-700"
+                              onClick={() => handleDownload(sale)}
+                            >
+                              <Download size={24} />
                             </button>
                           </td>
                         </tr>

@@ -3,6 +3,8 @@ import {
   createLeaveApplication,
   downloadSalesUserExcel,
   downloadSalesUserPDF,
+  generateAdminDailySalesExcel,
+  generateAdminDailySalesPDF,
   getLeave,
   getLeaveApplications,
   updateLeaveApplication,
@@ -26,4 +28,6 @@ router.get(
   downloadSalesUserPDF
 );
 
+router.get("/admin-daily-sales-pdf/:saleId", generateAdminDailySalesPDF);
+router.get("/admin-daily-sales-excel/:saleId", generateAdminDailySalesExcel);
 export default router;
