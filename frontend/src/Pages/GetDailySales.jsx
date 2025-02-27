@@ -53,13 +53,18 @@ const GetDailySales = () => {
     fetchSalesData();
   }, [startDate, endDate]);
 
-  const handleDownload = async (saleId) => {
+  const handleDownload = async (sale) => {
     try {
       const token = localStorage.getItem("authToken");
+
+      // Extract date from sale record (formatted as YYYY-MM-DD)
+      const saleDate = new Date(sale.createdAt).toISOString().split("T")[0];
+
+      // Define the API URL based on selected format
       const url =
         downloadFormat === "excel"
-          ? `/api/user/dowload-user-sales-excel/${saleId}`
-          : `/api/user/dowload-user-sales-pdf/${saleId}`;
+          ? `/api/user/dowload-user-sales-excel/${sale._id}`
+          : `/api/user/dowload-user-sales-pdf/${sale._id}`;
 
       const response = await fetch(url, {
         method: "GET",
@@ -75,7 +80,11 @@ const GetDailySales = () => {
       // Convert response into a Blob
       const blob = await response.blob();
       const fileExtension = downloadFormat === "excel" ? "xlsx" : "pdf";
-      FileSaver.saveAs(blob, `sales_data_${saleId}.${fileExtension}`);
+
+      // Generate filename with username and date
+      const fileName = `Sales_Report_${username}_${saleDate}.${fileExtension}`;
+
+      FileSaver.saveAs(blob, fileName);
     } catch (error) {
       console.error("Download error:", error);
     }
@@ -183,7 +192,7 @@ const GetDailySales = () => {
                         <td className="p-3">
                           <td className="p-3">
                             <button
-                              onClick={() => handleDownload(sale._id)}
+                              onClick={() => handleDownload(sale)}
                               className="text-blue-500 hover:text-blue-700"
                             >
                               <Download size={24} />
