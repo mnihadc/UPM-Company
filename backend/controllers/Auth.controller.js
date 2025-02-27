@@ -527,3 +527,23 @@ export const checkAuth = async (req, res) => {
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
+
+export const updateAdminStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isAdmin } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.isAdmin = isAdmin;
+    await user.save();
+
+    res.status(200).json({ message: "Admin status updated successfully" });
+  } catch (error) {
+    console.error("Error updating admin status:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

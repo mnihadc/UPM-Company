@@ -119,6 +119,51 @@ const UserManagement = () => {
     return matchesSearch && matchesEmailFilter && matchesRoleFilter;
   });
 
+  const handleAdminToggle = async (id, username, currentStatus) => {
+    const result = await Swal.fire({
+      title: `Are you sure?`,
+      text: `Do you want to ${
+        currentStatus ? "remove" : "make"
+      } ${username} an admin?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: `Yes, ${currentStatus ? "remove" : "make"} admin!`,
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await axios.put(`/api/auth/update-admin-status/${id}`, {
+        isAdmin: !currentStatus,
+      });
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === id ? { ...user, isAdmin: !currentStatus } : user
+        )
+      );
+
+      Swal.fire({
+        title: "Success!",
+        text: `${username} has been ${
+          currentStatus ? "removed from" : "granted"
+        } admin privileges.`,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: "There was an issue updating the admin status.",
+        icon: "error",
+      });
+      console.error("Error updating admin status", error);
+    }
+  };
+
   return (
     <div className="p-2 pt-12 bg-gray-900 text-white min-h-screen w-full overflow-x-auto">
       <h1 className="p-2 text-center text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 tracking-wide">
@@ -217,6 +262,9 @@ const UserManagement = () => {
                   <input
                     type="checkbox"
                     checked={user.isAdmin}
+                    onChange={() =>
+                      handleAdminToggle(user._id, user.username, user.isAdmin)
+                    }
                     className="cursor-pointer"
                   />
                 </td>

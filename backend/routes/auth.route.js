@@ -8,6 +8,7 @@ import {
   resendOtp,
   sendOtpToEmail,
   signUp,
+  updateAdminStatus,
   updateUserProfile,
   verifyEmailOtp,
   verifyOtp,
@@ -28,5 +29,6 @@ router.post("/verifyOtp", verifyOtp);
 router.get("/profile", verifyToken, getUserProfile);
 router.put("/update-profile", verifyToken, updateUserProfile);
 router.get("/check-auth", checkAuth);
+router.put("/update-admin-status/:id", updateAdminStatus);
 
 export default router;
