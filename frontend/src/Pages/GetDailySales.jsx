@@ -107,12 +107,6 @@ const GetDailySales = () => {
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
             />
-            <button
-              onClick={fetchSalesData}
-              className="bg-blue-600 hover:bg-blue-700 p-2 rounded-lg"
-            >
-              Filter
-            </button>
           </div>
           <span className="text-lg font-medium">
             {currentTime.toLocaleString()}

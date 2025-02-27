@@ -66,8 +66,8 @@ const LeaveApplicationPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-2 pt-5">
-      <div className="bg-gray-800 p-4 rounded-lg shadow-lg w-full max-w-md">
+    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4 lg:p-10">
+      <div className="bg-gray-800 p-6 lg:p-10 rounded-lg shadow-lg w-full max-w-2xl lg:max-w-3xl">
         <h1 className="text-3xl font-bold mb-6 text-center">
           Leave Application
         </h1>

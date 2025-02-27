@@ -137,7 +137,9 @@ const CreditUsers = () => {
                 </p>
               </div>
             </div>
-
+            <span>
+              <h4>Date Filter</h4>
+            </span>
             <div className="flex space-x-4">
               <input
                 type="date"
