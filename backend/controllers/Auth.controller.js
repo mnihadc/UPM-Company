@@ -147,49 +147,28 @@ export const getVerifyEmailPage = (req, res) => {
 
 export const verifyEmailOtp = async (req, res) => {
   try {
-    // Extract the token from request cookies or headers
-    const token =
-      req.cookies.authToken || req.headers.authorization?.split(" ")[1];
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized. No token provided." });
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required." });
     }
 
-    // Verify and decode the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const email = decoded.email; // Extract email from token
-
-    // Find the user in the database
     const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Extract OTP from request body
-    const { otp } = req.body;
-
-    if (!otp) {
-      return res.status(400).json({ message: "OTP is required" });
-    }
-
-    // Check if the OTP matches (convert both to strings)
     if (String(user.otp) !== String(otp)) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // Mark the user as verified
-    user.otp = null; // Remove OTP after successful verification
-    user.email_verify = true; // Assuming you have an `isVerified` field in your schema
+    // Mark user as verified and remove OTP
+    user.otp = null;
+    user.email_verify = true;
     await user.save();
 
-    // Clear token and cookies
-    res.clearCookie("authToken");
-
-    res
-      .status(200)
-      .json({ message: "Email verified successfully, redirecting to login." });
+    res.status(200).json({ message: "Email verified successfully." });
   } catch (error) {
     console.error("OTP Verification Error:", error);
     res.status(500).json({ message: "Server error" });
@@ -199,17 +178,13 @@ export const verifyEmailOtp = async (req, res) => {
 // Resend OTP Controller
 export const resendOtp = async (req, res) => {
   try {
-    const token =
-      req.cookies.authToken || req.headers.authorization?.split(" ")[1];
+    const { email } = req.body;
 
-    if (!token) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized. No token provided." });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required." });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findOne({ email: decoded.email });
+    const user = await User.findOne({ email: email.trim() });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -230,12 +205,11 @@ export const resendOtp = async (req, res) => {
     });
 
     // Email content
-
     const mailOptions = {
-      from: process.env.EMAIL_USER, // Your email user
-      to: user.email.trim(), // Recipient's email
+      from: process.env.EMAIL_USER,
+      to: user.email.trim(),
       subject: "Your Email Verification OTP By UPM Company",
-      text: `Your OTP for email verification is: ${newOtp}`, // Plain text version
+      text: `Your OTP for email verification is: ${newOtp}`,
       html: `
         <html>
           <head>
@@ -249,15 +223,15 @@ export const resendOtp = async (req, res) => {
           <body>
             <div class="container">
               <h2>Welcome to UPM Company!</h2>
-              <p>Resend OTP NEW ONE</p>
               <p>We received a request to verify your email address. Please use the OTP below to complete the process:</p>
               <div class="otp">${newOtp}</div>
               <p class="footer">If you didn't request this, please ignore this email.</p>
             </div>
           </body>
         </html>
-      `, // HTML version
+      `,
     };
+
     // Send Email
     await transporter.sendMail(mailOptions);
 
