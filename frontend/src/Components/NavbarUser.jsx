@@ -1,19 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 const NavbarUser = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { currentUser } = useSelector((state) => state.user);
-
+  const [userData, setUserData] = useState(null);
   const isAdmin = currentUser?.user?.isAdmin === true;
   const isUser = currentUser?.user?.isAdmin === false;
 
   // Default profile image
   const defaultProfilePic =
     "https://static.vecteezy.com/system/resources/thumbnails/019/879/186/small_2x/user-icon-on-transparent-background-free-png.png";
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get("/api/auth/profile", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setUserData(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
 
+    fetchUserData();
+  }, []);
   return (
     <nav className="bg-blue-800 text-gray-900 p-4 shadow-md fixed w-full z-50">
       <div className="container mx-auto flex justify-between items-center">
@@ -113,7 +129,7 @@ const NavbarUser = () => {
             {currentUser ? (
               <img
                 className="rounded-full h-8 w-8 object-cover border border-gray-300"
-                src={currentUser.profilePic || defaultProfilePic}
+                src={userData?.avatar || defaultProfilePic}
                 alt="profile"
               />
             ) : (
@@ -237,7 +253,7 @@ const NavbarUser = () => {
             {currentUser ? (
               <img
                 className="rounded-full h-8 w-8 object-cover border border-gray-300"
-                src={currentUser.profilePic || defaultProfilePic}
+                src={userData?.avatar || defaultProfilePic}
                 alt="profile"
               />
             ) : (
