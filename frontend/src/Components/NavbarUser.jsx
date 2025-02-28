@@ -17,8 +17,15 @@ const NavbarUser = () => {
   return (
     <nav className="bg-blue-800 text-gray-900 p-4 shadow-md fixed w-full z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-semibold text-white">
-          {isAdmin ? "UPM Company Admin" : "UPM Company"}
+        <Link to="/" className="flex items-center space-x-2">
+          <img
+            src="/upm_world-logo.png"
+            alt="UPM World"
+            className="h-10 w-10 object-contain"
+          />
+          <span className="text-2xl font-semibold text-white">
+            {isAdmin ? "UPM_World Company Admin" : "UPM_World Company"}
+          </span>
         </Link>
 
         {/* Desktop Links */}
