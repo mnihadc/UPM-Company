@@ -17,7 +17,7 @@ const NavbarUser = () => {
   return (
     <nav className="bg-blue-800 text-gray-900 p-4 shadow-md fixed w-full z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2">
+        <Link to="#" className="flex items-center space-x-2">
           <img
             src="/upm_world-logo.png"
             alt="UPM World"
@@ -30,11 +30,11 @@ const NavbarUser = () => {
 
         {/* Desktop Links */}
         <div className="hidden md:flex space-x-6">
-          <Link to="/" className="hover:text-white transition font-bold">
-            Home
-          </Link>
           {isUser && (
             <>
+              <Link to="/" className="hover:text-white transition font-bold">
+                Home
+              </Link>
               <Link
                 to="/leader-board"
                 className="hover:text-white transition font-bold"
@@ -63,6 +63,12 @@ const NavbarUser = () => {
           )}
           {isAdmin && (
             <>
+              <Link
+                to="/admin-dashboard"
+                className="hover:text-white transition font-bold"
+              >
+                Home
+              </Link>
               <Link
                 to="/usermangement"
                 className="hover:text-white transition font-bold"
@@ -130,15 +136,15 @@ const NavbarUser = () => {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden flex flex-col items-center bg-blue-800 py-2 space-y-3">
-          <Link
-            to="/"
-            className="hover:text-white transition font-bold"
-            onClick={() => setIsOpen(false)}
-          >
-            Home
-          </Link>
           {isUser && (
             <>
+              <Link
+                to="/"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Home
+              </Link>
               <Link
                 to="/leader-board"
                 className="hover:text-white transition font-bold"
@@ -171,6 +177,13 @@ const NavbarUser = () => {
           )}
           {isAdmin && (
             <>
+              <Link
+                to="/admin-dashboard"
+                className="hover:text-white transition font-bold"
+                onClick={() => setIsOpen(false)}
+              >
+                Home
+              </Link>
               <Link
                 to="/usermangement"
                 className="hover:text-white transition font-bold"

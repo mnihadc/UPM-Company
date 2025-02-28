@@ -28,15 +28,27 @@ const Login = () => {
 
     try {
       const response = await axios.post("/api/auth/login", formData);
-      localStorage.setItem("authToken", response.data.token);
+      const { token, user } = response.data;
+      const isAdmin = user.isAdmin;
+      // Store token and admin status
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("isAdmin", isAdmin);
+
       dispatch(signInSuccess(response.data));
+
       Swal.fire({
         title: "Login Successful",
         text: "You have successfully logged in.",
         icon: "success",
         confirmButtonText: "OK",
       });
-      navigate("/");
+
+      // Redirect based on isAdmin flag
+      if (isAdmin) {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/user");
+      }
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Login failed.";
       dispatch(signInFailure(errorMessage));

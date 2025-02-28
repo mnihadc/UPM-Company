@@ -521,3 +521,18 @@ export const deleteLeave = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+export const getadminDashboardDailySales = async (req, res) => {
+  try {
+    // Fetch all daily sales data (no userId filter)
+    const dailySales = await DailySales.find().sort({ createdAt: -1 });
+
+    if (!dailySales || dailySales.length === 0) {
+      return res.status(404).json({ message: "No daily sales data found" });
+    }
+
+    res.status(200).json(dailySales);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -30,6 +30,7 @@ import AdminUserChart from "./Pages/AdminUserChart";
 import AdminDailySales from "./Pages/AdminDailyTable";
 import LeaveApplicationPage from "./Pages/LeaveUser";
 import AdminLeavePage from "./Pages/AdminLeave";
+import AdminDashboard from "./Pages/AdminDashboard";
 function App() {
   return (
     <BrowserRouter>
@@ -61,6 +62,7 @@ function App() {
 
           {/* Admin Routes */}
           <Route element={<PrivateAdminRoute />}>
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/usermangement" element={<UserManagement />} />
             <Route path="/profit-chart" element={<AdminProfitChart />} />
             <Route path="/sales-chart" element={<AdminSalesChart />} />

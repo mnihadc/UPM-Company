@@ -7,6 +7,7 @@ import {
   downloadSalesUserPDF,
   generateAdminDailySalesExcel,
   generateAdminDailySalesPDF,
+  getadminDashboardDailySales,
   getLeave,
   getLeaveApplications,
   updateLeaveApplication,
@@ -40,5 +41,6 @@ router.put(
   updateProfileImage
 );
 router.delete("/delete-leave-applications/:id", deleteLeave);
+router.get("/admin-dashboard-data", getadminDashboardDailySales);
 
 export default router;
