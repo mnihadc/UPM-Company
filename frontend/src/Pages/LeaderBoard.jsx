@@ -58,7 +58,7 @@ const Leaderboard = () => {
   );
 
   return (
-    <div className="p-4 bg-gray-900 min-h-screen text-white pt-16">
+    <div className="p-4 bg-gray-900 min-h-screen text-white pt-20">
       <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">
         Sales Leaderboard
       </h1>

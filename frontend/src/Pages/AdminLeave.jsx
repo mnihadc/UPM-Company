@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
 import Swal from "sweetalert2";
+
 const AdminLeavePage = () => {
   const [leaveApplications, setLeaveApplications] = useState({
     pending: [],
@@ -40,6 +41,14 @@ const AdminLeavePage = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const showFullReason = (username, reason) => {
+    Swal.fire({
+      title: `Reason by ${username}`,
+      html: `<p>${reason}</p>`,
+      confirmButtonText: "Close",
+    });
+  };
 
   if (loading) {
     return (
@@ -135,7 +144,7 @@ const AdminLeavePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-3 pt-12">
+    <div className="min-h-screen bg-gray-900 text-white p-3 pt-20">
       <h1 className="text-3xl font-bold mb-4 text-center">
         Leave Applications
       </h1>
@@ -194,7 +203,14 @@ const AdminLeavePage = () => {
                       {new Date(leave.leaveEndDate).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
-                      {leave.reason}
+                      <div
+                        className="truncate cursor-pointer"
+                        onClick={() =>
+                          showFullReason(leave.userId.username, leave.reason)
+                        }
+                      >
+                        {leave.reason}
+                      </div>
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
                       {new Date(leave.createdAt).toLocaleString()}
@@ -280,7 +296,14 @@ const AdminLeavePage = () => {
                       {new Date(leave.leaveEndDate).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
-                      {leave.reason}
+                      <div
+                        className="truncate cursor-pointer"
+                        onClick={() =>
+                          showFullReason(leave.userId.username, leave.reason)
+                        }
+                      >
+                        {leave.reason}
+                      </div>
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
                       {new Date(leave.createdAt).toLocaleString()}
@@ -366,7 +389,14 @@ const AdminLeavePage = () => {
                       {new Date(leave.leaveEndDate).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
-                      {leave.reason}
+                      <div
+                        className="truncate cursor-pointer"
+                        onClick={() =>
+                          showFullReason(leave.userId.username, leave.reason)
+                        }
+                      >
+                        {leave.reason}
+                      </div>
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
                       {new Date(leave.createdAt).toLocaleString()}

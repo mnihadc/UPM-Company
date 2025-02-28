@@ -165,7 +165,7 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="p-2 pt-12 bg-gray-900 text-white min-h-screen w-full overflow-x-auto">
+    <div className="p-2 pt-20 bg-gray-900 text-white min-h-screen w-full overflow-x-auto">
       <h1 className="p-2 text-center text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 tracking-wide">
         User Management
       </h1>
