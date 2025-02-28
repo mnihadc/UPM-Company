@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { ClipLoader } from "react-spinners";
 import Swal from "sweetalert2";
+import { FaTrash } from "react-icons/fa";
 
 const AdminLeavePage = () => {
   const [leaveApplications, setLeaveApplications] = useState({
@@ -143,6 +144,41 @@ const AdminLeavePage = () => {
     }
   };
 
+  const deleteLeaveApplication = async (id) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`/api/user/leave-applications/${id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        setLeaveApplications((prev) => ({
+          pending: prev.pending.filter((leave) => leave._id !== id),
+          approved: prev.approved.filter((leave) => leave._id !== id),
+          rejected: prev.rejected.filter((leave) => leave._id !== id),
+        }));
+
+        Swal.fire(
+          "Deleted!",
+          "The leave application has been deleted.",
+          "success"
+        );
+      } catch (error) {
+        console.error("Error deleting leave application:", error);
+        Swal.fire("Error!", "Failed to delete leave application.", "error");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-3 pt-20">
       <h1 className="text-3xl font-bold mb-4 text-center">
@@ -182,6 +218,7 @@ const AdminLeavePage = () => {
                   <th className="px-6 py-3 border-b border-gray-700">
                     Actions
                   </th>
+                  <th className="px-6 py-3 border-b border-gray-700">Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -234,6 +271,12 @@ const AdminLeavePage = () => {
                         Reject
                       </button>
                     </td>
+                    <button
+                      onClick={() => deleteLeaveApplication(leave._id)}
+                      className="p-2 bg-red-600 rounded hover:bg-red-500"
+                    >
+                      <FaTrash className="text-white" />
+                    </button>
                   </tr>
                 ))}
               </tbody>
@@ -275,6 +318,7 @@ const AdminLeavePage = () => {
                   <th className="px-6 py-3 border-b border-gray-700">
                     Actions
                   </th>
+                  <th className="px-6 py-3 border-b border-gray-700">Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -327,6 +371,12 @@ const AdminLeavePage = () => {
                         Reject
                       </button>
                     </td>
+                    <button
+                      onClick={() => deleteLeaveApplication(leave._id)}
+                      className="p-2 bg-red-600 rounded hover:bg-red-500"
+                    >
+                      <FaTrash className="text-white" />
+                    </button>
                   </tr>
                 ))}
               </tbody>
@@ -368,6 +418,7 @@ const AdminLeavePage = () => {
                   <th className="px-6 py-3 border-b border-gray-700">
                     Actions
                   </th>
+                  <th className="px-6 py-3 border-b border-gray-700">Delete</th>
                 </tr>
               </thead>
               <tbody>
@@ -420,6 +471,12 @@ const AdminLeavePage = () => {
                         Approve
                       </button>
                     </td>
+                    <button
+                      onClick={() => deleteLeaveApplication(leave._id)}
+                      className="p-2 bg-red-600 rounded hover:bg-red-500"
+                    >
+                      <FaTrash className="text-white" />
+                    </button>
                   </tr>
                 ))}
               </tbody>
