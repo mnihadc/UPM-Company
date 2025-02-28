@@ -32,6 +32,7 @@ import AdminDailySales from "./Pages/AdminDailyTable";
 import LeaveApplicationPage from "./Pages/LeaveUser";
 import AdminLeavePage from "./Pages/AdminLeave";
 import AdminDashboard from "./Pages/AdminDashboard";
+import DeleteOldDataButton from "./Components/DeleteOldDataButton";
 
 function App() {
   const { currentUser } = useSelector((state) => state.user);
@@ -88,6 +89,10 @@ function App() {
             <Route
               path="/admin-leave-application"
               element={<AdminLeavePage />}
+            />
+            <Route
+              path="/delete-daily-sales-data"
+              element={<DeleteOldDataButton />}
             />
           </Route>
 

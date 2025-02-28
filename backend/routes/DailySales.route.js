@@ -3,6 +3,7 @@ import {
   createDailySales,
   creditUser,
   dailySales,
+  deleteOldSales,
   getDailySalesChart,
   getLeaderboard,
   getTodaySales,
@@ -21,5 +22,6 @@ router.get("/daily-sales-chart", getDailySalesChart);
 router.get("/users-credits", creditUser);
 router.put("/update-credit/:id", updateCredit);
 router.get("/leaderboard", getLeaderboard);
+router.delete("/delete-old-sales", deleteOldSales);
 
 export default router;

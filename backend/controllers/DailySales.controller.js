@@ -385,3 +385,28 @@ export const getLeaderboard = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+export const deleteOldSales = async (req, res) => {
+  try {
+    // Calculate the date for 3 months ago (before the start of that month)
+    const threeMonthsAgo = moment()
+      .subtract(3, "months")
+      .startOf("month")
+      .toDate();
+    
+    // Delete all records older than this date
+    const result = await DailySales.deleteMany({
+      createdAt: { $lt: threeMonthsAgo },
+    });
+
+    res.status(200).json({
+      message: "Old sales data deleted successfully",
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting old sales data",
+      error: error.message,
+    });
+  }
+};
