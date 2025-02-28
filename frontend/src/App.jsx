@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Home from "./Pages/Home";
 import Footer from "./Components/Footer";
 import SignupForm from "./Pages/SignUp";
@@ -31,16 +32,25 @@ import AdminDailySales from "./Pages/AdminDailyTable";
 import LeaveApplicationPage from "./Pages/LeaveUser";
 import AdminLeavePage from "./Pages/AdminLeave";
 import AdminDashboard from "./Pages/AdminDashboard";
+
 function App() {
+  const { currentUser } = useSelector((state) => state.user);
+  const isAdmin = currentUser?.user?.isAdmin === true;
+
   return (
     <BrowserRouter>
       <NavbarUser />
       <div className="pb-7 pt-5 bg-black">
-        {/* Add NavbarUser conditionally for authenticated users */}
         <Routes>
+          {/* Redirect based on user role */}
+          <Route
+            path="/"
+            element={<Navigate to={isAdmin ? "/admin-dashboard" : "/home"} />}
+          />
+
           {/* User Routes */}
           <Route element={<PrivateRoute />}>
-            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/daily-sales" element={<DailySales />} />
             <Route path="/get-daily-sales" element={<GetDailySales />} />

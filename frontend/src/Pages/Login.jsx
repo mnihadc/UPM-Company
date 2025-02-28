@@ -47,7 +47,7 @@ const Login = () => {
       if (isAdmin) {
         navigate("/admin-dashboard");
       } else {
-        navigate("/user");
+        navigate("/");
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Login failed.";
