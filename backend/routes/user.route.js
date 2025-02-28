@@ -1,4 +1,5 @@
 import express from "express";
+import upload from "../utils/multerConfig.js";
 import {
   createLeaveApplication,
   downloadSalesUserExcel,
@@ -8,6 +9,7 @@ import {
   getLeave,
   getLeaveApplications,
   updateLeaveApplication,
+  updateProfileImage,
 } from "../controllers/user.controller.js";
 import { verifyToken } from "../utils/verifyUser.js";
 
@@ -30,4 +32,12 @@ router.get(
 
 router.get("/admin-daily-sales-pdf/:saleId", generateAdminDailySalesPDF);
 router.get("/admin-daily-sales-excel/:saleId", generateAdminDailySalesExcel);
+router.put(
+  "/upload-profile",
+  verifyToken,
+  upload.single("image"),
+  updateProfileImage
+);
+
+
 export default router;

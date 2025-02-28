@@ -129,6 +129,32 @@ const Profile = () => {
     }
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await fetch("/api/user/upload-profile", {
+        method: "PUT",
+        body: formData,
+        credentials: "include",
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setUserData({ ...userData, avatar: data.user.avatar });
+        Swal.fire("Success", "Profile image updated!", "success");
+      } else {
+        Swal.fire("Error", data.message, "error");
+      }
+    } catch (error) {
+      Swal.fire("Error", "Upload failed", "error", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-2 flex justify-center items-center pt-14">
       {loading ? (
@@ -137,14 +163,28 @@ const Profile = () => {
         <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Profile Card */}
           <div className="bg-gray-800 p-8 rounded-lg flex flex-col items-center shadow-lg">
-            <img
-              src={
-                currentUser.avatar ||
-                "https://bootdey.com/img/Content/avatar/avatar7.png"
-              }
-              alt="User"
-              className="rounded-full w-32 h-32 mb-4 border-4 border-gray-600"
+            {/* Profile Image */}
+            <label htmlFor="fileInput" className="cursor-pointer">
+              <img
+                src={
+                  userData?.avatar ||
+                  "https://bootdey.com/img/Content/avatar/avatar7.png"
+                }
+                alt="User"
+                className="rounded-full w-32 h-32 mb-4 border-4 border-gray-600 hover:opacity-80 transition"
+              />
+            </label>
+
+            {/* Hidden File Input */}
+            <input
+              type="file"
+              id="fileInput"
+              className="hidden"
+              accept="image/*"
+              onChange={handleImageUpload}
             />
+
+            {/* User Info */}
             <h4 className="text-2xl font-semibold">{userData?.username}</h4>
             <p className="text-gray-400">{userData?.email}</p>
           </div>

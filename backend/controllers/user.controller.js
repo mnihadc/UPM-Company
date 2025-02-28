@@ -461,3 +461,43 @@ export const generateAdminDailySalesExcel = async (req, res) => {
   }
 };
 
+export const updateProfileImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No file uploaded" });
+    }
+
+    const imageUrl = req.file.path; // Cloudinary provides this URL
+    const userId = req.user?.id; // Ensure userId is available
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    // Update user profile image in the database
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { avatar: imageUrl },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile image updated successfully!",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Upload error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Upload failed", error: error.message });
+  }
+};
