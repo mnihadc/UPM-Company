@@ -501,3 +501,23 @@ export const updateProfileImage = async (req, res) => {
       .json({ success: false, message: "Upload failed", error: error.message });
   }
 };
+
+export const deleteLeave = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Leave ID is required" });
+    }
+
+    const leave = await LeaveApplication.findByIdAndDelete(id);
+
+    if (!leave) {
+      return res.status(404).json({ message: "Leave application not found" });
+    }
+
+    res.status(200).json({ message: "Leave application deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

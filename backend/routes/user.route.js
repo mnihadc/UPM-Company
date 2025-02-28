@@ -2,6 +2,7 @@ import express from "express";
 import upload from "../utils/multerConfig.js";
 import {
   createLeaveApplication,
+  deleteLeave,
   downloadSalesUserExcel,
   downloadSalesUserPDF,
   generateAdminDailySalesExcel,
@@ -38,6 +39,6 @@ router.put(
   upload.single("image"),
   updateProfileImage
 );
-
+router.delete("/delete-leave-applications/:id", deleteLeave);
 
 export default router;

@@ -157,10 +157,13 @@ const AdminLeavePage = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`/api/user/leave-applications/${id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        await axios.delete(`/api/user/delete-leave-applications/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
 
+        // Remove from UI
         setLeaveApplications((prev) => ({
           pending: prev.pending.filter((leave) => leave._id !== id),
           approved: prev.approved.filter((leave) => leave._id !== id),
@@ -174,7 +177,7 @@ const AdminLeavePage = () => {
         );
       } catch (error) {
         console.error("Error deleting leave application:", error);
-        Swal.fire("Error!", "Failed to delete leave application.", "error");
+        Swal.fire("Error", "Failed to delete leave application.", "error");
       }
     }
   };
@@ -264,6 +267,7 @@ const AdminLeavePage = () => {
                       >
                         Approve
                       </button>
+
                       <button
                         onClick={() => updateLeaveStatus(leave._id, "Rejected")}
                         className="bg-red-600 px-2 py-1 rounded-full text-sm"
@@ -271,12 +275,14 @@ const AdminLeavePage = () => {
                         Reject
                       </button>
                     </td>
-                    <button
-                      onClick={() => deleteLeaveApplication(leave._id)}
-                      className="p-2 bg-red-600 rounded hover:bg-red-500"
-                    >
-                      <FaTrash className="text-white" />
-                    </button>
+                    <td className="px-6 py-4 border-b border-gray-700">
+                      <button
+                        onClick={() => deleteLeaveApplication(leave._id)}
+                        className="p-2 bg-red-600 rounded hover:bg-red-500"
+                      >
+                        <FaTrash className="text-white" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -371,12 +377,14 @@ const AdminLeavePage = () => {
                         Reject
                       </button>
                     </td>
-                    <button
-                      onClick={() => deleteLeaveApplication(leave._id)}
-                      className="p-2 bg-red-600 rounded hover:bg-red-500"
-                    >
-                      <FaTrash className="text-white" />
-                    </button>
+                    <td className="px-6 py-4 border-b border-gray-700">
+                      <button
+                        onClick={() => deleteLeaveApplication(leave._id)}
+                        className="p-2 bg-red-600 rounded hover:bg-red-500"
+                      >
+                        <FaTrash className="text-white" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -471,12 +479,14 @@ const AdminLeavePage = () => {
                         Approve
                       </button>
                     </td>
-                    <button
-                      onClick={() => deleteLeaveApplication(leave._id)}
-                      className="p-2 bg-red-600 rounded hover:bg-red-500"
-                    >
-                      <FaTrash className="text-white" />
-                    </button>
+                    <td className="px-6 py-4 border-b border-gray-700">
+                      <button
+                        onClick={() => deleteLeaveApplication(leave._id)}
+                        className="p-2 bg-red-600 rounded hover:bg-red-500"
+                      >
+                        <FaTrash className="text-white" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
