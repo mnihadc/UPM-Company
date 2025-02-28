@@ -368,7 +368,7 @@ export const getLeaderboard = async (req, res) => {
     const users = await Promise.all(
       salesData.map(async (sale) => {
         const user = await User.findById(sale._id).select(
-          "username profilePic email"
+          "username avatar email"
         );
         return user
           ? { ...user.toObject(), totalSales: sale.totalSales }
@@ -393,7 +393,7 @@ export const deleteOldSales = async (req, res) => {
       .subtract(3, "months")
       .startOf("month")
       .toDate();
-    
+
     // Delete all records older than this date
     const result = await DailySales.deleteMany({
       createdAt: { $lt: threeMonthsAgo },
