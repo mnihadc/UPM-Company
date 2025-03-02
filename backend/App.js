@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.route.js";
 import adminUserManagement from "./routes/AdminUserManagement.route.js";
 import salesManagement from "./routes/DailySales.route.js";
 import userRoutes from "./routes/user.route.js";
+import dataRoutes from "./routes/data.route.js";
 import path from "path";
 dotenv.config();
 const __dirname = path.resolve();
@@ -30,6 +31,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin-usermangement", adminUserManagement);
 app.use("/api/sales", salesManagement);
 app.use("/api/user", userRoutes);
+app.use("/api/data", dataRoutes);
 
 // Connect to MongoDB
 mongoose

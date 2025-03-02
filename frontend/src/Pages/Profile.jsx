@@ -10,6 +10,7 @@ import {
   signoutUserFailure,
 } from "../Redux/user/userSlice";
 import Leave from "../Components/Leave";
+import UserPerformance from "../Components/UserPerformance";
 
 const Profile = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -194,6 +195,7 @@ const Profile = () => {
                 </button>
               </a>
             )}
+            {!currentUser?.user.isAdmin && <UserPerformance />}
           </div>
 
           {/* Edit Profile Form */}
