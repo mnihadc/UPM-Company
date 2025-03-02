@@ -1,12 +1,12 @@
 import DailySales from "../models/DailySales.model.js";
 import PDFDocument from "pdfkit";
+import fs from "fs";
 
 export const userPerformance = async (req, res) => {
   try {
     const { filter } = req.query;
-    const userId = req.user.id; // Get the user ID from the authenticated request
+    const userId = req.user.id;
 
-    // Calculate date range based on filter
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const startOfLastMonth = new Date(
@@ -25,13 +25,11 @@ export const userPerformance = async (req, res) => {
       endDate = endOfLastMonth;
     }
 
-    // Fetch data from MongoDB for the specific user
     const salesData = await DailySales.find({
-      userId: userId, // Filter by the authenticated user's ID
+      userId: userId,
       createdAt: { $gte: startDate, $lte: endDate },
     }).populate("userId", "username email");
 
-    // Calculate total sales, profit, credit, and expense
     let totalSales = 0;
     let totalProfit = 0;
     let totalCredit = 0;
@@ -42,12 +40,11 @@ export const userPerformance = async (req, res) => {
       totalProfit += entry.totalProfit;
       totalExpense += entry.totalExpense;
       entry.customers.forEach((customer) => {
-        totalCredit += customer.credit;
+        totalCredit += customer.credit || 0;
       });
     });
 
-    // Generate PDF
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ margin: 50, size: "A4" });
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
@@ -55,17 +52,16 @@ export const userPerformance = async (req, res) => {
     );
     doc.pipe(res);
 
-    // Add a stylish header
+    // Add a professional header
     doc
-      .fillColor("#333333") // Dark gray color
+      .fillColor("#333333")
       .fontSize(24)
       .text("User Performance Report", { align: "center", underline: true })
-      .moveDown(1);
+      .moveDown(0.5);
 
-    // Add filter information
-    const monthName = today.toLocaleString("default", { month: "long" }); // Full month name (e.g., "October")
-    const year = today.getFullYear(); // Current year
-    const formattedDate = today.toLocaleDateString(); // Formatted date (e.g., "10/15/2023")
+    const monthName = today.toLocaleString("default", { month: "long" });
+    const year = today.getFullYear();
+    const formattedDate = today.toLocaleDateString();
 
     let filterText;
     if (filter === "thisMonth") {
@@ -75,94 +71,170 @@ export const userPerformance = async (req, res) => {
         today.getFullYear(),
         today.getMonth() - 1,
         1
-      ).toLocaleString("default", { month: "long" }); // Last month's name
+      ).toLocaleString("default", { month: "long" });
       filterText = `Last Month (${lastMonthName} ${year})`;
     }
 
     doc
-      .fontSize(14)
-      .fillColor("#555555") // Gray color
-      .text(`Filter: ${filterText}`, { align: "left" })
+      .fontSize(12)
+      .fillColor("#555555")
+      .text(`Filter: ${filterText}`, { align: "center" })
       .moveDown(1);
 
-    // Display user details
+    // Add user details section
     if (salesData.length > 0) {
       const user = salesData[0].userId;
       doc
-        .fontSize(16)
-        .fillColor("#007BFF") // Blue color
+        .fontSize(14)
+        .fillColor("#007BFF")
         .text("User Details:", { underline: true })
         .moveDown(0.5);
       doc
         .fontSize(12)
-        .fillColor("#333333") // Dark gray color
+        .fillColor("#333333")
         .text(`Username: ${user.username}`)
         .text(`Email: ${user.email}`)
         .moveDown(1);
     }
 
-    // Display summary in styled boxes
+    // Add summary section with styled boxes
     doc
-      .fontSize(16)
-      .fillColor("#007BFF") // Blue color
+      .fontSize(14)
+      .fillColor("#007BFF")
       .text("Summary:", { underline: true })
       .moveDown(0.5);
 
-    const boxWidth = 120; // Width of each box
-    const boxHeight = 60; // Height of each box
-    const boxMargin = 20; // Margin between boxes
-    const startX = 50; // Starting X position
-    const startY = doc.y; // Starting Y position
-
-    // Function to draw a styled box
     const drawBox = (x, y, label, value) => {
-      doc.rect(x, y, boxWidth, boxHeight).fill("#E3F2FD"); // Light blue background color
-
+      doc.rect(x, y, 120, 60).fill("#E3F2FD").stroke("#007BFF");
       doc
         .fontSize(12)
-        .fillColor("#007BFF") // Blue color for label
-        .text(label, x + 10, y + 10, { width: boxWidth - 20, align: "center" });
-
+        .fillColor("#007BFF")
+        .text(label, x + 10, y + 10, { width: 100, align: "center" });
       doc
         .fontSize(14)
-        .fillColor("#333333") // Dark gray color for value
-        .text(value, x + 10, y + 30, { width: boxWidth - 20, align: "center" });
+        .fillColor("#333333")
+        .text(value, x + 10, y + 30, { width: 100, align: "center" });
     };
 
-    // Draw boxes for total sales, profit, credit, and expense
+    const startX = 50,
+      startY = doc.y;
     drawBox(startX, startY, "Total Sales", `OMN ${totalSales.toFixed(2)}`);
     drawBox(
-      startX + boxWidth + boxMargin,
+      startX + 140,
       startY,
       "Total Profit",
       `OMN ${totalProfit.toFixed(2)}`
     );
     drawBox(
-      startX + 2 * (boxWidth + boxMargin),
+      startX + 280,
       startY,
       "Total Credit",
       `OMN ${totalCredit.toFixed(2)}`
     );
     drawBox(
-      startX + 3 * (boxWidth + boxMargin),
+      startX + 420,
       startY,
       "Total Expense",
       `OMN ${totalExpense.toFixed(2)}`
     );
 
-    // Move down after the boxes
     doc.moveDown(2);
+    doc
+      .fillColor("#333333")
+      .fontSize(14)
+      .text("Customer Data", { align: "center", underline: true })
+      .moveDown(0.5);
 
-    // Add a footer
+    const headers = [
+      "Date",
+      "File",
+      "Name",
+      "Sales",
+      "Profit",
+      "Credit",
+      "Expense",
+      "VAT",
+      "Parts",
+    ];
+    const columnWidths = [60, 40, 80, 50, 50, 50, 50, 40, 40];
+
+    let x = 50,
+      y = doc.y;
+    doc.lineWidth(1).strokeColor("#007BFF");
+
+    // Draw table headers
+    headers.forEach((header, i) => {
+      doc.rect(x, y, columnWidths[i], 20).fill("#007BFF").stroke("#007BFF");
+      doc
+        .fontSize(12)
+        .fillColor("#FFFFFF")
+        .text(header, x + 5, y + 5, { width: columnWidths[i], align: "left" });
+      x += columnWidths[i];
+    });
+
+    y += 20;
+
+    const allCustomers = salesData
+      .flatMap((entry) =>
+        entry.customers.map((customer) => ({
+          ...customer.toObject(),
+          createdAt: entry.createdAt,
+        }))
+      )
+      .sort((a, b) => a.createdAt - b.createdAt);
+
+    // Draw table rows
+    allCustomers.forEach((customer, index) => {
+      x = 50;
+      const rowHeight = 20;
+
+      // Alternate row colors for better readability
+      if (index % 2 === 0) {
+        doc.rect(x, y, 520, rowHeight).fill("#F5F5F5").stroke("#E0E0E0");
+      }
+
+      const rowData = [
+        customer.createdAt?.toLocaleDateString() || "-",
+        customer.file?.toString() || "-",
+        customer.name || "-",
+        `${customer.sales?.toFixed(2) || "0.00"}`,
+        `${customer.profit?.toFixed(2) || "0.00"}`,
+        `${customer.credit?.toFixed(2) || "0.00"}`,
+        `${customer.expense?.toFixed(2) || "0.00"}`,
+        `${customer.vat?.toFixed(2) || "0.00"}`,
+        customer.parts?.toString() || "-",
+      ];
+
+      rowData.forEach((data, i) => {
+        doc
+          .fontSize(10)
+          .fillColor("#333333")
+          .text(data, x + 5, y + 5, {
+            width: columnWidths[i] - 10,
+            align: "left",
+            lineBreak: false,
+          });
+        doc.rect(x, y, columnWidths[i], rowHeight).stroke("#E0E0E0");
+        x += columnWidths[i];
+      });
+
+      y += rowHeight;
+    });
+
+    // Add a footer with the download date
+    const downloadedDate = new Date().toLocaleDateString();
     doc
       .fontSize(10)
-      .fillColor("#777777") // Light gray color
-      .text(`Report generated on: ${formattedDate}`, { align: "center" });
+      .fillColor("#777777")
+      .text(`Downloaded on: ${downloadedDate}`, 50, doc.page.height - 50, {
+        align: "center",
+      });
 
-    // Finalize the PDF
     doc.end();
   } catch (error) {
     console.error("Error generating PDF:", error);
-    res.status(500).json({ message: "Failed to generate PDF" });
+    if (!res.headersSent) {
+      res.status(500).json({ message: "Failed to generate PDF" });
+    }
   }
 };

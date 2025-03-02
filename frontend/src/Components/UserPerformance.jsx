@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 
 const UserPerformance = () => {
   const [filter, setFilter] = useState("thisMonth");
@@ -31,7 +32,11 @@ const UserPerformance = () => {
   const downloadPDF = async () => {
     try {
       if (!username) {
-        console.error("Username not available");
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Username not available!",
+        });
         return;
       }
 
@@ -71,6 +76,16 @@ const UserPerformance = () => {
       }
       const blob = await response.blob();
 
+      // Check if the blob is empty (no data)
+      if (blob.size === 0) {
+        Swal.fire({
+          icon: "info",
+          title: "No Data",
+          text: "There is no data available to download for the selected period.",
+        });
+        return;
+      }
+
       // Create a link to download the PDF
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -80,8 +95,20 @@ const UserPerformance = () => {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url); // Clean up the URL object
+
+      // Show success message
+      Swal.fire({
+        icon: "success",
+        title: "Download Successful",
+        text: "The PDF has been downloaded successfully!",
+      });
     } catch (error) {
       console.error("Error downloading PDF:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong while downloading the PDF!",
+      });
     }
   };
 
