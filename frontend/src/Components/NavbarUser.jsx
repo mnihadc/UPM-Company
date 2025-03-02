@@ -101,19 +101,19 @@ const NavbarUser = () => {
                 to="/admin-chart"
                 className="hover:text-white transition font-bold"
               >
-                Admin-Chart
+                Sales-Chart
               </Link>
               <Link
                 to="/admin-user-chart"
                 className="hover:text-white transition font-bold"
               >
-                Admin-User-Chart
+                User-Chart
               </Link>
               <Link
                 to="/admin-daily-sales"
                 className="hover:text-white transition font-bold"
               >
-                Daily-Sales_Table
+                Sales-Table
               </Link>
               <Link
                 to="/admin-leave-application"
@@ -219,21 +219,21 @@ const NavbarUser = () => {
                 className="hover:text-white transition font-bold"
                 onClick={() => setIsOpen(false)}
               >
-                Admin-Chart
+                Sales-Chart
               </Link>
               <Link
                 to="/admin-user-chart"
                 className="hover:text-white transition font-bold"
                 onClick={() => setIsOpen(false)}
               >
-                Admin-User-Chart
+                User-Chart
               </Link>
               <Link
                 to="/admin-daily-sales"
                 className="hover:text-white transition font-bold"
                 onClick={() => setIsOpen(false)}
               >
-                Daily-Sales_Table
+                Sales-Table
               </Link>
               <Link
                 to="/admin-leave-application"
