@@ -10,6 +10,7 @@ import {
   getadminDashboardDailySales,
   getLeave,
   getLeaveApplications,
+  getUserDashboard,
   updateLeaveApplication,
   updateProfileImage,
 } from "../controllers/user.controller.js";
@@ -42,5 +43,6 @@ router.put(
 );
 router.delete("/delete-leave-applications/:id", deleteLeave);
 router.get("/admin-dashboard-data", getadminDashboardDailySales);
+router.get("/user-dashboard-data", verifyToken, getUserDashboard);
 
 export default router;

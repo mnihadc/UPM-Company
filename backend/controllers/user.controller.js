@@ -536,3 +536,20 @@ export const getadminDashboardDailySales = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getUserDashboard = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const dailySales = await DailySales.find({ userId }).sort({
+      createdAt: -1,
+    });
+
+    if (!dailySales || dailySales.length === 0) {
+      return res.status(404).json({ message: "No daily sales data found" });
+    }
+
+    res.status(200).json(dailySales);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
