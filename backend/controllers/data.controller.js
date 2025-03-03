@@ -1,11 +1,17 @@
 import DailySales from "../models/DailySales.model.js";
 import PDFDocument from "pdfkit";
-import fs from "fs";
 
 export const userPerformance = async (req, res) => {
   try {
-    const { filter } = req.query;
-    const userId = req.user.id;
+    const { filter, userId: queryUserId } = req.query;
+    const tokenUserId = req.user.id; // Extract user ID from token
+
+    // Determine which user ID to use (admin can pass userId, otherwise use token userId)
+    const userId = queryUserId || tokenUserId;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
 
     const today = new Date();
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -52,7 +58,7 @@ export const userPerformance = async (req, res) => {
     );
     doc.pipe(res);
 
-    // Add a professional header
+    // Add Header
     doc
       .fillColor("#333333")
       .fontSize(24)
@@ -97,7 +103,7 @@ export const userPerformance = async (req, res) => {
         .moveDown(1);
     }
 
-    // Add summary section with styled boxes
+    // Summary Section
     doc
       .fontSize(14)
       .fillColor("#007BFF")
@@ -162,7 +168,7 @@ export const userPerformance = async (req, res) => {
       y = doc.y;
     doc.lineWidth(1).strokeColor("#007BFF");
 
-    // Draw table headers
+    // Table Headers
     headers.forEach((header, i) => {
       doc.rect(x, y, columnWidths[i], 20).fill("#007BFF").stroke("#007BFF");
       doc
@@ -183,12 +189,11 @@ export const userPerformance = async (req, res) => {
       )
       .sort((a, b) => a.createdAt - b.createdAt);
 
-    // Draw table rows
+    // Table Rows
     allCustomers.forEach((customer, index) => {
       x = 50;
       const rowHeight = 20;
 
-      // Alternate row colors for better readability
       if (index % 2 === 0) {
         doc.rect(x, y, 520, rowHeight).fill("#F5F5F5").stroke("#E0E0E0");
       }
@@ -221,7 +226,7 @@ export const userPerformance = async (req, res) => {
       y += rowHeight;
     });
 
-    // Add a footer with the download date
+    // Footer
     const downloadedDate = new Date().toLocaleDateString();
     doc
       .fontSize(10)

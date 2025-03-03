@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
-
+import Swal from "sweetalert2";
+import { useSelector } from "react-redux";
 const months = [
   "January",
   "February",
@@ -27,12 +28,14 @@ const motivationalQuotes = [
 ];
 
 const Leaderboard = () => {
+  const { currentUser } = useSelector((state) => state.user);
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
   const [leader, setLeader] = useState(null);
   const [loading, setLoading] = useState(true); // Added loading state
+  const [filters, setFilters] = useState({});
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -56,7 +59,79 @@ const Leaderboard = () => {
       user.username.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase())
   );
+  const handleFilterChange = (userId, value) => {
+    setFilters((prev) => ({ ...prev, [userId]: value }));
+  };
 
+  const downloadPDF = async (username, userId) => {
+    try {
+      if (!username) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Username not available!",
+        });
+        return;
+      }
+
+      const today = new Date();
+      const selectedFilter = filters[userId] || "thisMonth";
+      let fileName;
+
+      if (selectedFilter === "thisMonth") {
+        const formattedDate = today.toISOString().split("T")[0];
+        fileName = `${username}-${
+          months[today.getMonth()]
+        }-upto-${formattedDate}.pdf`;
+      } else {
+        const lastMonth = new Date(
+          today.getFullYear(),
+          today.getMonth() - 1,
+          1
+        );
+        fileName = `${username}-${
+          months[lastMonth.getMonth()]
+        }-${lastMonth.getFullYear()}.pdf`;
+      }
+
+      const response = await fetch(
+        `/api/data/generate-pdf-user-performance?filter=${selectedFilter}&userId=${userId}`
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch PDF");
+      const blob = await response.blob();
+
+      if (blob.size === 0) {
+        Swal.fire({
+          icon: "info",
+          title: "No Data",
+          text: "No data available for the selected period.",
+        });
+        return;
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      Swal.fire({
+        icon: "success",
+        title: "Download Successful",
+        text: "PDF downloaded successfully!",
+      });
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong while downloading the PDF!",
+      });
+    }
+  };
   return (
     <div className="p-4 bg-gray-900 min-h-screen text-white pt-20">
       <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">
@@ -155,6 +230,28 @@ const Leaderboard = () => {
                           ]
                         }`}
                   </p>
+                  {currentUser?.user.isAdmin && (
+                    <div className="mt-2 flex flex-col items-center">
+                      <select
+                        value={filters[user._id] || "thisMonth"}
+                        onChange={(e) =>
+                          handleFilterChange(user._id, e.target.value)
+                        }
+                        className="p-2 border border-gray-600 rounded-md bg-gray-700 text-white"
+                      >
+                        <option value="thisMonth">
+                          This Month (Up to Today)
+                        </option>
+                        <option value="lastMonth">Last Month</option>
+                      </select>
+                      <button
+                        onClick={() => downloadPDF(user.username, user._id)}
+                        className="mt-2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+                      >
+                        Download PDF
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
