@@ -11,6 +11,7 @@ import {
 } from "../Redux/user/userSlice";
 import Leave from "../Components/Leave";
 import UserPerformance from "../Components/UserPerformance";
+import AdminPerformanceDownload from "../Components/AdminPerformance";
 
 const Profile = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -195,6 +196,7 @@ const Profile = () => {
                 </button>
               </a>
             )}
+            {currentUser?.user.isAdmin && <AdminPerformanceDownload />}
             {!currentUser?.user.isAdmin && <UserPerformance />}
           </div>
 

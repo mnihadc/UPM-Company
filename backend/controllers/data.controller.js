@@ -1,5 +1,8 @@
 import DailySales from "../models/DailySales.model.js";
 import PDFDocument from "pdfkit";
+import moment from "moment";
+import User from "../models/User.model.js";
+import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 
 export const userPerformance = async (req, res) => {
   try {
@@ -241,5 +244,238 @@ export const userPerformance = async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ message: "Failed to generate PDF" });
     }
+  }
+};
+
+export const AdminPerformancepdf = async (req, res) => {
+  try {
+    const { filter } = req.query;
+    let startDate, endDate;
+
+    if (filter === "lastMonth") {
+      startDate = moment().subtract(1, "months").startOf("month");
+      endDate = moment().subtract(1, "months").endOf("month");
+    } else {
+      startDate = moment().startOf("month");
+      endDate = moment();
+    }
+
+    // Fetch sales data
+    const salesData = await DailySales.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
+        },
+      },
+      {
+        $group: {
+          _id: "$userId",
+          totalSales: { $sum: "$totalSales" },
+          totalProfit: { $sum: "$totalProfit" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      { $unwind: "$userDetails" },
+      {
+        $project: {
+          username: "$userDetails.username",
+          email: "$userDetails.email",
+          totalSales: 1,
+          totalProfit: 1,
+        },
+      },
+      { $sort: { totalSales: -1 } },
+    ]);
+
+    const totalSales = salesData.reduce(
+      (sum, user) => sum + user.totalSales,
+      0
+    );
+    const totalProfit = salesData.reduce(
+      (sum, user) => sum + user.totalProfit,
+      0
+    );
+
+    // Create PDF
+    const doc = new PDFDocument({ margin: 50, size: "A4", layout: "portrait" });
+    let buffers = [];
+    doc.on("data", buffers.push.bind(buffers));
+    doc.on("end", () => {
+      const pdfData = Buffer.concat(buffers);
+      res.setHeader(
+        "Content-Disposition",
+        "attachment; filename=admin-performance.pdf"
+      );
+      res.setHeader("Content-Type", "application/pdf");
+      res.send(pdfData);
+    });
+
+    // Header
+    doc
+      .fillColor("#2c3e50")
+      .fontSize(24)
+      .font("Helvetica-Bold")
+      .text("Admin Monthly Performance Report", { align: "center" })
+      .moveDown(0.5);
+
+    // Date Range
+    doc
+      .fillColor("#7f8c8d")
+      .fontSize(12)
+      .font("Helvetica")
+      .text(
+        `Date Range: ${startDate.format("YYYY-MM-DD")} to ${endDate.format(
+          "YYYY-MM-DD"
+        )}`,
+        { align: "center" }
+      )
+      .moveDown(1);
+
+    // Divider
+    doc
+      .strokeColor("#bdc3c7")
+      .lineWidth(1)
+      .moveTo(50, doc.y)
+      .lineTo(550, doc.y)
+      .stroke();
+
+    // Total Sales and Profit
+    doc
+      .fillColor("#34495e")
+      .fontSize(16)
+      .font("Helvetica-Bold")
+      .text("Summary", { align: "center" })
+      .moveDown(0.5);
+
+    doc
+      .fillColor("#2ecc71")
+      .fontSize(14)
+      .font("Helvetica")
+      .text(`Total Sales: OMN ${totalSales.toLocaleString()}`, {
+        align: "center",
+      })
+      .text(`Total Profit: OMN ${totalProfit.toLocaleString()}`, {
+        align: "center",
+      })
+      .moveDown(1);
+
+    // Leaderboard
+    doc
+      .fillColor("#34495e")
+      .fontSize(18)
+      .font("Helvetica-Bold")
+      .text("Top Performers", { align: "center", underline: true })
+      .moveDown(0.5);
+
+    salesData.forEach((user, index) => {
+      if (index === 0) {
+        // Highlight the top performer
+        doc
+          .fillColor("#f1c40f") // Golden color
+          .rect(50, doc.y, 500, 25)
+          .fill()
+          .fillColor("#000000")
+          .fontSize(14)
+          .font("Helvetica-Bold")
+          .text(
+            `1st ${user.username} (${
+              user.email
+            }) - Sales: OMN ${user.totalSales.toLocaleString()}`,
+            60,
+            doc.y + 5
+          );
+      } else {
+        doc
+          .fillColor("#2c3e50")
+          .fontSize(12)
+          .font("Helvetica")
+          .text(
+            `${index + 1}. ${user.username} (${
+              user.email
+            }) - Sales: OMN ${user.totalSales.toLocaleString()}`
+          );
+      }
+      doc.moveDown(0.5);
+    });
+
+    // Generate Bar Chart
+    const width = 600; // Width of the chart
+    const height = 800; // Increased height to accommodate 30 users
+    const chartJSNodeCanvas = new ChartJSNodeCanvas({ width, height });
+
+    const labels = salesData.map((user) => user.username);
+    const data = salesData.map((user) => user.totalSales);
+
+    const configuration = {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Total Sales (OMN)",
+            data: data,
+            backgroundColor: "#2ecc71",
+            borderColor: "#27ae60",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y", // Horizontal bars for better readability
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Total Sales (OMN)",
+            },
+          },
+          y: {
+            ticks: {
+              autoSkip: false, // Ensure all labels are displayed
+              font: {
+                size: 10, // Smaller font size for y-axis labels
+              },
+              color: "#2c3e50", // Darker color for better visibility
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: "top",
+          },
+        },
+      },
+    };
+
+    const chartImage = await chartJSNodeCanvas.renderToBuffer(configuration);
+
+    // Add Chart to PDF
+    doc.addPage(); // Add a new page for the chart
+    doc.moveDown(2); // Add space before the chart
+    doc.text("Sales Performance Chart", { align: "center", underline: true });
+    doc.moveDown(0.5);
+    doc.image(chartImage, 50, doc.y, { width: 500, align: "center" });
+
+    // Footer
+    doc
+      .fillColor("#7f8c8d")
+      .fontSize(10)
+      .font("Helvetica")
+      .text(`Generated on: ${moment().format("YYYY-MM-DD HH:mm:ss")}`, {
+        align: "center",
+      });
+
+    doc.end();
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
