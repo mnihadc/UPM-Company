@@ -3,6 +3,21 @@ import PDFDocument from "pdfkit";
 import moment from "moment";
 import User from "../models/User.model.js";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
+import cron from "node-cron";
+import { generatePDF } from "../utils/generatePdf.js";
+
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config(); // Load environment variables
+
+const transporter = nodemailer.createTransport({
+  service: "Gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // Your email from .env
+    pass: process.env.EMAIL_PASS, // Your email password from .env (use an App Password if using Gmail)
+  },
+});
 
 export const userPerformance = async (req, res) => {
   try {
@@ -477,5 +492,48 @@ export const AdminPerformancepdf = async (req, res) => {
     doc.end();
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const sendSalesReport = async () => {
+  try {
+    // Fetch admin users
+    const adminUsers = await User.find({ isAdmin: true }, "email");
+    const adminEmails = adminUsers.map((admin) => admin.email);
+
+    if (adminEmails.length === 0) {
+      console.log("No admin users found.");
+      return;
+    }
+
+    // Fetch today's sales
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const salesData = await DailySales.find({
+      createdAt: { $gte: today },
+    }).populate("userId", "username");
+
+    if (salesData.length === 0) {
+      console.log("No sales data for today.");
+      return;
+    }
+
+    // Generate PDF
+    const pdfPath = await generatePDF(salesData);
+
+    // Email options
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: adminEmails, // Send to all admins
+      subject: "Daily Sales Report",
+      text: "Attached is today's sales report.",
+      attachments: [{ filename: "sales_report.pdf", path: pdfPath }],
+    };
+
+    // Send Email
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending sales report:", error);
   }
 };
