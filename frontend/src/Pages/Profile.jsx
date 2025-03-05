@@ -136,13 +136,16 @@ const Profile = () => {
     if (!file) return;
 
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("image", file); // Ensure this key matches Multer config
 
     try {
       const response = await fetch("/api/user/upload-profile", {
         method: "PUT",
         body: formData,
         credentials: "include",
+        headers: {
+          // **DO NOT** set 'Content-Type': 'multipart/form-data' (let the browser handle it)
+        },
       });
 
       const data = await response.json();
