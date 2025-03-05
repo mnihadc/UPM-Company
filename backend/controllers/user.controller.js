@@ -463,20 +463,22 @@ export const generateAdminDailySalesExcel = async (req, res) => {
 
 export const updateProfileImage = async (req, res) => {
   try {
+    console.log("Request received. File:", req.file); // Debugging
+
     if (!req.file) {
       return res
         .status(400)
         .json({ success: false, message: "No file uploaded" });
     }
 
-    const imageUrl = req.file.path; // Cloudinary provides this URL
-    const userId = req.user?.id; // Ensure userId is available
+    const imageUrl = req.file.path;
+    console.log("Uploaded Image URL:", imageUrl); // Debugging
 
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    // Update user profile image in the database
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { avatar: imageUrl },
@@ -496,9 +498,11 @@ export const updateProfileImage = async (req, res) => {
     });
   } catch (error) {
     console.error("Upload error:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Upload failed", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Upload failed",
+      error: error.message,
+    });
   }
 };
 
