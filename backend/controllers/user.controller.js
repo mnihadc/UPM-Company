@@ -53,17 +53,23 @@ export const getLeaveApplications = async (req, res) => {
     // Fetch all leave applications sorted by createdAt in descending order
     const leaveApplications = await LeaveApplication.find()
       .sort({ createdAt: -1 }) // Latest applications first
-      .populate("userId", "username email"); // Populate user details
+      .populate("userId", "username email") // Populate user details
+      .lean(); // Convert Mongoose documents to plain JS objects
+
+    // Filter and format leave applications
+    const filteredLeaves = leaveApplications.map((leave) => {
+      if (!leave.userId) {
+        // If userId is deleted, remove user details
+        return { ...leave, userId: undefined };
+      }
+      return leave;
+    });
 
     // Group leave applications by status
     const groupedLeaves = {
-      pending: leaveApplications.filter((leave) => leave.status === "Pending"),
-      approved: leaveApplications.filter(
-        (leave) => leave.status === "Approved"
-      ),
-      rejected: leaveApplications.filter(
-        (leave) => leave.status === "Rejected"
-      ),
+      pending: filteredLeaves.filter((leave) => leave.status === "Pending"),
+      approved: filteredLeaves.filter((leave) => leave.status === "Approved"),
+      rejected: filteredLeaves.filter((leave) => leave.status === "Rejected"),
     };
 
     res.status(200).json(groupedLeaves);

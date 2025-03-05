@@ -228,10 +228,10 @@ const AdminLeavePage = () => {
                 {leaveApplications.pending.map((leave) => (
                   <tr key={leave._id} className="hover:bg-gray-700">
                     <td className="px-6 py-4 border-b border-gray-700">
-                      {leave.userId.username}
+                      {leave.userId?.username}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
-                      {leave.userId.email}
+                      {leave.userId?.email}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-700">
                       {leave.leaveType}
