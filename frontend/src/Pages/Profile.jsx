@@ -139,7 +139,7 @@ const Profile = () => {
     formData.append("image", file); // Ensure this key matches Multer config
 
     try {
-      const response = await fetch("https://upm-company.onrender.com/api/user/upload-profile", {
+      const response = await fetch("/api/user/upload-profile", {
         method: "PUT",
         body: formData,
         credentials: "include",
